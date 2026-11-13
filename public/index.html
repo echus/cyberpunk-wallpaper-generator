@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cyberpunk Wallpaper Generator</title>
+  <meta name="description" content="Generate minimal, glitchy cyberpunk wallpapers for phone and desktop.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <form id="controls">
+      <h1>cyberpunk wallpaper generator</h1>
+
+      <label>Device
+        <select name="device">
+          <option value="phone">Phone</option>
+          <option value="desktop">Desktop</option>
+        </select>
+      </label>
+
+      <div class="pair">
+        <label>Width <input name="width" type="number" min="320" max="7680" step="1"></label>
+        <label>Height <input name="height" type="number" min="320" max="7680" step="1"></label>
+      </div>
+
+      <div class="pair">
+        <label>Colour <select name="palette"></select></label>
+        <label>Custom <input name="accent" type="color"></label>
+      </div>
+
+      <label>Seed <input name="seed" type="number" min="0" max="999999" step="1"></label>
+
+      <label>Glitch <output name="glitchValue"></output>
+        <input name="glitch" type="range" min="0" max="1" step="0.05">
+      </label>
+
+      <div class="buttons">
+        <button type="button" id="new-seed">New seed</button>
+        <button type="button" id="download">Download PNG</button>
+      </div>
+
+      <p id="status" aria-live="polite"></p>
+    </form>
+
+    <div class="preview">
+      <canvas id="wallpaper" aria-label="Wallpaper preview"></canvas>
+    </div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

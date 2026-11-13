@@ -1,0 +1,8 @@
+// Cloudflare Worker that serves the static files in public/. There is no server code.
+{
+  "name": "cyberpunk-wallpaper-generator",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./public"
+  }
+}

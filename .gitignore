@@ -1,6 +1,5 @@
 out/
-__pycache__/
-*.pyc
-.venv/
-venv/
+.wrangler/
+node_modules/
+.claude/
 .DS_Store

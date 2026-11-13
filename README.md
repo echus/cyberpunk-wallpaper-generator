@@ -4,28 +4,39 @@ Generate minimal, glitchy cyberpunk wallpapers for phone and desktop.
 
 ![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001)](examples/preview.jpg)
 
-## Install
+## Run locally
+
+The site is static files in `public/`. It has no build step and no dependencies.
 
 ```bash
-pip install -r requirements.txt
+npx wrangler dev
 ```
 
-## Use
+Any static file server also works, for example `python3 -m http.server -d public`.
+
+## Deploy
+
+The site runs as a Cloudflare Worker with static assets (see `wrangler.jsonc`).
 
 ```bash
-python3 wallpaper.py --count 10                     # 10 phone wallpapers
-python3 wallpaper.py --device desktop --count 10    # 10 desktop wallpapers
+npx wrangler deploy
 ```
 
-The script writes the images to the `out/` folder.
+## Controls
 
-## Options
+- **Device**: Sets the size. Phone is 1440x3120. Desktop is 3840x2160.
+- **Width, Height**: Set a custom size in pixels, for example to match your screen.
+- **Colour**: Sets a preset accent: `sodium`, `cyan`, `acid`, `magenta`, `red`, `uv`.
+- **Custom**: Sets any accent colour.
+- **Seed**: Sets a seed for a reproducible layout. The file name shows the seed.
+- **Glitch**: Sets the glitch level. `0` is clean.
+- **Download PNG**: Saves the wallpaper at full size.
 
-- `--device phone|desktop`: Sets the size. `phone` is 1440x3120 (default). `desktop` is 3840x2160.
-- `--count N`: Sets the number of images. Default: 1.
-- `--seed N`: Sets a seed for a reproducible layout. The file name shows the seed.
-- `--palette NAME`: Sets a preset accent: `sodium` (default), `cyan`, `acid`, `magenta`, `red`, `uv`.
-- `--accent '#RRGGBB'`: Sets a custom accent colour. Overrides `--palette`.
-- `--glitch 0..1`: Sets the glitch level. `0` is clean. Default: `0.5`.
-- `--width N`, `--height N`: Set a custom size in pixels, for example to match your screen.
-- `--out DIR`: Sets the output folder. Default: `out/`.
+## Files
+
+- `public/wallpaper.js`: makes the shapes and the layout.
+- `public/effects.js`: glitches, vignette and grain.
+- `public/random.js`: seeded random numbers.
+- `public/app.js`: connects the page controls to the generator.
+
+The first version was a Python script. It is at the [`v1-python`](https://github.com/echus/cyberpunk-wallpaper-generator/tree/v1-python) tag.
