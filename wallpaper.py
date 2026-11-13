@@ -31,6 +31,7 @@ PALETTES = {
     "acid":    (186, 255, 18),
     "magenta": (255, 36, 120),
     "red":     (255, 34, 48),
+    "uv":      (82, 46, 222),
 }
 BG = (8, 9, 11)
 FAINT = (21, 23, 27)
@@ -42,19 +43,22 @@ TEXT = (86, 92, 102)
 
 LABELS = ["04", "07", "12", "K-9", "SYN", "0x3F", "Δ118", "MK.II", "A/7",
           "IO", "N.04", "REF", "88", "LNK", "v2", "AUX"]
+HUD_LINES = ["TGT ACQ", "RNG 2.41KM", "BRG 047", "ALT 0880", "SYS NOMINAL", "LOCK --",
+             "VEL 312", "GRID 44-N", "ARM SAFE", "LINK OK", "TRK 03/12", "HDG 271"]
+TAGS = ["CAUTION", "NO STEP", "RESTRICTED", "ARMED", "HAZARD 04", "UNIT 7", "SECTOR C", "LIVE"]
 
 
 def scale(c, k):
     return tuple(min(255, int(v * k)) for v in c)
 
 
-def load_font(px):
+def load_font(px, index=0):
     for path in ("/System/Library/Fonts/Menlo.ttc",
                  "/System/Library/Fonts/SFNSMono.ttf",
                  "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"):
         if os.path.exists(path):
             try:
-                return ImageFont.truetype(path, px)
+                return ImageFont.truetype(path, px, index=index)
             except OSError:
                 pass
     return ImageFont.load_default(size=px)
@@ -92,6 +96,7 @@ class Wallpaper:
         k = min(w, h) / 1290  # detail scale: 1 on a phone, larger on big screens
         self.u = 8 * ss * k
         self.font = load_font(int(10 * ss * k))
+        self.font_b = load_font(int(11 * ss * k), index=1)  # Menlo Bold for stencil tags
 
     def r(self, a, b):
         return self.rng.uniform(a, b)
@@ -426,10 +431,220 @@ class Wallpaper:
                 self.poly([(x + h, oy), (x + h + wd, oy), (x + wd, oy + h), (x, oy + h)], fill=A, accent=True)
         return n * (wd + g) - g + h, h, draw
 
+    # ------------------------------------------------------------ HUD / military
+    def _inverse_tag(self, x, y, txt, acc, font=None):
+        """Solid angled tag with the text knocked out of it (dark on solid)."""
+        font = font or self.font_b
+        u = self.u
+        tw = self.draw.textlength(txt, font=font)
+        bh = u * 1.9
+        bw = tw + u * 1.6 + bh * 0.5
+        pts = [(x, y), (x + bw, y), (x + bw - bh * 0.5, y + bh), (x, y + bh)]
+        ty = y + (bh - font.size) / 2 - self.S
+        if acc:
+            self.poly(pts, fill=self.accent, accent=True)
+            self.adraw.text((x + u * 0.8, ty), txt, font=font, fill=(0, 0, 0))
+        else:
+            self.poly(pts, fill=LINE)
+            self.draw.text((x + u * 0.8, ty), txt, font=font, fill=BG)
+        return bw, bh
+
+    def plan_reticle(self):
+        """Targeting reticle: four arcs with gaps, cardinal ticks, solid centre diamond."""
+        rng, S = self.rng, self.S
+        R = self.cw * rng.choice([0.4, 0.5, 0.65])
+        gap = rng.choice([14, 24, 34])
+        rot = rng.choice([0, 45])
+        ring = rng.random() < 0.5
+        e = R * (1.42 if ring else 1.12)
+
+        def draw(ox, oy, acc):
+            cx, cy = ox + e, oy + e
+            box = [cx - R, cy - R, cx + R, cy + R]
+            acc_k = rng.randrange(4) if acc else -1
+            for k in range(4):
+                on = k == acc_k
+                (self.adraw if on else self.draw).arc(
+                    box, rot + k * 90 + gap / 2, rot + (k + 1) * 90 - gap / 2,
+                    fill=self.accent if on else LINE, width=S * (2 if on else 1))
+            for k in range(4):
+                a = math.radians(rot + k * 90)
+                self.line([(cx + math.cos(a) * R * 0.72, cy + math.sin(a) * R * 0.72),
+                           (cx + math.cos(a) * R * 1.12, cy + math.sin(a) * R * 1.12)], fill=LINE)
+            if ring:
+                for d in range(0, 360, 10):
+                    a = math.radians(d)
+                    L = R * (0.14 if d % 30 == 0 else 0.07)
+                    r0 = R * 1.28
+                    self.line([(cx + math.cos(a) * r0, cy + math.sin(a) * r0),
+                               (cx + math.cos(a) * (r0 + L), cy + math.sin(a) * (r0 + L))], fill=DIM)
+            r = S * 4
+            self.poly([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], fill=LINE)
+        return 2 * e, 2 * e, draw
+
+    def plan_tape(self):
+        """Compass heading tape: ticks, degree labels, solid triangle pointer."""
+        rng, u = self.rng, self.u
+        step = u * 1.2
+        n = int(self.cw * rng.choice([2.5, 3, 3.5]) / step)
+        w = n * step
+        start = rng.randrange(0, 360, 5)
+        names = {0: "N", 90: "E", 180: "S", 270: "W"}
+
+        def draw(ox, oy, acc):
+            base = oy + u * 2.6
+            self.line([(ox, base), (ox + w, base)], fill=DIM)
+            for i in range(n + 1):
+                x = ox + i * step
+                deg = (start + i * 5) % 360
+                major = deg % 15 == 0
+                self.line([(x, base), (x, base - (u * 0.9 if major else u * 0.45))],
+                          fill=LINE if major else DIM)
+                if deg % 30 == 0:
+                    txt = names.get(deg, f"{deg:03d}")
+                    tw = self.draw.textlength(txt, font=self.font)
+                    self.draw.text((x - tw / 2, base + u * 0.5), txt, font=self.font,
+                                   fill=TEXT if deg in names else DIM)
+            cx = ox + (n // 2) * step
+            tri = [(cx - u * 0.75, oy), (cx + u * 0.75, oy), (cx, oy + u * 1.0)]
+            if acc:
+                self.poly(tri, fill=self.accent, accent=True)
+            else:
+                self.poly(tri, fill=LINE)
+        return w, u * 2.6 + u * 0.5 + self.font.size, draw
+
+    def plan_ladder(self):
+        """Altitude ladder: vertical scale, numbers, solid arrow-tag pointer."""
+        rng, u = self.rng, self.u
+        step = u * 1.2
+        n = int(self.cw * rng.choice([1.5, 2, 2.5]) / step)
+        start = rng.randrange(0, 900, 10)
+        j = rng.randint(2, max(2, n - 2))
+        lab_w = self.draw.textlength("0000", font=self.font)
+
+        def draw(ox, oy, acc):
+            x = ox + lab_w + u
+            self.line([(x, oy), (x, oy + n * step)], fill=DIM)
+            for i in range(n + 1):
+                y = oy + i * step
+                k = n - i
+                major = k % 5 == 0
+                self.line([(x, y), (x + (u * 0.9 if major else u * 0.45), y)], fill=LINE if major else DIM)
+                if major:
+                    txt = f"{start + k * 10:04d}"
+                    tw = self.draw.textlength(txt, font=self.font)
+                    self.draw.text((x - u * 0.5 - tw, y - self.font.size * 0.6), txt, font=self.font, fill=TEXT)
+            py = oy + j * step
+            hh = u * 0.7
+            arrow = [(x + u * 1.3, py), (x + u * 2.1, py - hh), (x + u * 5.5, py - hh),
+                     (x + u * 5.5, py + hh), (x + u * 2.1, py + hh)]
+            if acc:
+                self.poly(arrow, fill=self.accent, accent=True)
+            else:
+                self.poly(arrow, fill=SOLIDS[2])
+        return lab_w + u * 6.5, n * step, draw
+
+    def plan_readout(self):
+        """Status readout: inverse tag over stacked stencil text lines."""
+        rng, u = self.rng, self.u
+        lines = rng.sample(HUD_LINES, rng.randint(2, 4))
+        tag = rng.choice(TAGS)
+        lh = u * 1.8
+        tw = max(self.draw.textlength(t, font=self.font) for t in lines)
+        tagw = self.draw.textlength(tag, font=self.font_b) + u * 2.6
+
+        def draw(ox, oy, acc):
+            self._inverse_tag(ox, oy, tag, acc)
+            y0 = oy + u * 2.6
+            self.line([(ox, y0), (ox, y0 + lh * len(lines) - u * 0.4)], fill=DIM)
+            for i, t in enumerate(lines):
+                self.draw.text((ox + u, y0 + i * lh), t, font=self.font, fill=TEXT if i == 0 else DIM)
+        return max(tw + u, tagw), u * 2.6 + lh * len(lines), draw
+
+    def plan_tag(self):
+        """Warning tags: same-size solid angled blocks with knocked-out stencil text."""
+        rng, u = self.rng, self.u
+        words = rng.sample(TAGS, rng.randint(1, 3))
+        tw = max(self.draw.textlength(t, font=self.font_b) for t in words)
+        bh = u * 1.9
+        bw = tw + u * 1.6 + bh * 0.5
+        g = u * 0.6
+        stack = rng.random() < 0.5
+
+        def draw(ox, oy, acc):
+            acc_i = rng.randrange(len(words)) if acc else -1
+            for i, t in enumerate(words):
+                x, y = (ox + i * bh * 0.5, oy + i * (bh + g)) if stack else (ox + i * (bw + g), oy)
+                xs = self.draw.textlength(t, font=self.font_b)
+                pts = [(x, y), (x + bw, y), (x + bw - bh * 0.5, y + bh), (x, y + bh)]
+                ty = y + (bh - self.font_b.size) / 2 - self.S
+                tx = x + (bw - bh * 0.5 - xs) / 2
+                if i == acc_i:
+                    self.poly(pts, fill=self.accent, accent=True)
+                    self.adraw.text((tx, ty), t, font=self.font_b, fill=(0, 0, 0))
+                else:
+                    self.poly(pts, fill=LINE)
+                    self.draw.text((tx, ty), t, font=self.font_b, fill=BG)
+        n = len(words)
+        if stack:
+            return bw + (n - 1) * bh * 0.5, n * bh + (n - 1) * g, draw
+        return n * bw + (n - 1) * g, bh, draw
+
+    def plan_callout(self):
+        """Leader line rising at 45 degrees from a diamond anchor to a label."""
+        rng, u, S = self.rng, self.u, self.S
+        d = self.cw * rng.choice([0.4, 0.6, 0.8])
+        run = self.cw * rng.choice([0.8, 1.1])
+        label = rng.choice(HUD_LINES)
+        th = self.font.size + u * 0.6
+
+        def draw(ox, oy, acc):
+            ax, ay = ox + S * 5, oy + th + d
+            ex, ey = ax + d, oy + th
+            self.line([(ax, ay), (ex, ey), (ex + run, ey)], fill=LINE)
+            r = S * 5
+            dia = [(ax, ay - r), (ax + r, ay), (ax, ay + r), (ax - r, ay)]
+            if acc:
+                self.poly(dia, fill=self.accent, accent=True)
+            else:
+                self.poly(dia, outline=LINE)
+            self.draw.text((ex + u * 0.5, oy), label, font=self.font, fill=TEXT)
+            self.poly([(ex + run - u * 1.5, ey - S * 2), (ex + run, ey - S * 2),
+                       (ex + run, ey + S * 2), (ex + run - u * 1.5 + S * 4, ey + S * 2)], fill=LINE)
+        return S * 5 + d + run, th + d + S * 5, draw
+
+    HUD = ["reticle", "tape", "ladder", "readout", "tag", "callout"]
+
+    def e_bleed_arc(self, cx, cy, R, side, acc):
+        """Huge radar / range arcs centred off-screen: thin rings, ticks, a solid band."""
+        rng, u, S = self.rng, self.u, self.S
+        span = 70  # degrees of arc that face into the screen
+        mid = 0 if side < 0 else 180
+        a0, a1 = mid - span, mid + span
+        for f in (1.0, 0.82):
+            rr = R * f
+            self.draw.arc([cx - rr, cy - rr, cx + rr, cy + rr], a0, a1, fill=DIM, width=S)
+        band = R * 0.9
+        b0 = mid + rng.uniform(-span * 0.8, span * 0.2)
+        b1 = b0 + rng.uniform(15, 35)
+        self.draw.arc([cx - band, cy - band, cx + band, cy + band], b0, b1,
+                      fill=SOLIDS[2], width=int(u * 1.6))
+        for dg in range(int(a0), int(a1) + 1, 3):
+            a = math.radians(dg)
+            L = u * (1.0 if dg % 15 == 0 else 0.5)
+            self.line([(cx + math.cos(a) * R, cy + math.sin(a) * R),
+                       (cx + math.cos(a) * (R + L), cy + math.sin(a) * (R + L))], fill=LINE if dg % 15 == 0 else DIM)
+        if acc:
+            c0 = mid + rng.uniform(-span * 0.6, span * 0.4)
+            self.adraw.arc([cx - R * 0.82, cy - R * 0.82, cx + R * 0.82, cy + R * 0.82], c0, c0 + 6,
+                           fill=self.accent, width=S * 3)
+
     GROUPS = {  # type: (weight, can carry accent)
         "hex": (3, True), "trap": (3, True), "para": (3, True),
         "segments": (2, True), "chevrons": (1, True), "cross": (1, True), "dots": (1, True),
         "bars": (2, True), "brackets": (1, True), "text": (1, True), "ruler": (1, False),
+        "reticle": (2, True), "tape": (2, True), "ladder": (2, True), "readout": (2, True),
+        "tag": (2, True), "callout": (1, True),
     }
 
     # ------------------------------------------------------------ edge-bleeding shapes
@@ -532,8 +747,8 @@ class Wallpaper:
                        for t in taken)
 
         # 1-2 large shapes, always cut off by a screen edge; each uses up a type
-        consumes = {"hex": "hex", "hatch": "para", "rail": "ruler"}
-        kinds = ["hex", "hex", "hex", "rail", "rail", "hatch", "hatch"]
+        consumes = {"hex": "hex", "hatch": "para", "rail": "ruler", "arc": "reticle"}
+        kinds = ["hex", "hex", "hex", "rail", "rail", "hatch", "hatch", "arc", "arc"]
         side = rng.choice([-1, 1])
         for i in range(rng.randint(*self.n_big)):
             kind = rng.choice([k for k in kinds if consumes[k] not in used])
@@ -561,6 +776,17 @@ class Wallpaper:
                       max(x for x, _ in cells) + R, max(y for _, y in cells) + R)
                 draw = (lambda t=tiles, ro=rot: lambda acc: self.e_bleed_hex(t, ro, acc))()
                 pad = -cw * 0.25
+            elif kind == "arc":
+                R = self.S0 * (self.r(0.5, 0.75) if big else self.r(0.3, 0.45))
+                cx = -R * self.r(0.6, 0.85)
+                cy = self.r(top + R * 0.4, bottom)
+                if side > 0:
+                    cx = W - cx
+                reach = R * 1.06 + u
+                bx = ((cx - reach, cy - reach, cx + reach, cy + reach) if side < 0 else
+                      (cx - reach, cy - reach, cx + reach, cy + reach))
+                draw = (lambda c=(cx, cy, R, side): lambda acc: self.e_bleed_arc(*c, acc))()
+                pad = u * 2
             else:
                 if kind == "rail":
                     y0 = top + span * self.r(0.03, 0.35)
@@ -586,7 +812,11 @@ class Wallpaper:
         avail = [t for t in self.GROUPS if t not in used]
         snap = cw / 2
         queue = ["spark"]
-        for _ in range(rng.randint(*self.n_groups)):
+        huds = [t for t in self.HUD if t in avail]
+        for t in rng.sample(huds, min(len(huds), rng.randint(1, 2))):
+            avail.remove(t)
+            queue.append(t)
+        for _ in range(rng.randint(*self.n_groups) - (len(queue) - 1)):
             if not avail:
                 break
             t = rng.choices(avail, [self.GROUPS[a][0] for a in avail])[0]
@@ -777,7 +1007,7 @@ class Wallpaper:
         # 3. colour shift: swap channels in a thin band (orange turns blue/violet)
         for _ in range(n(0.8)):
             y0, y1 = band(2, 24)
-            perm = rng.choice([[2, 1, 0], [1, 2, 0], [2, 0, 1]])
+            perm = rng.choice([[2, 1, 0], [1, 2, 0]])  # blue/violet shifts only, never green
             seg = f[y0:y1]
             ink = (np.abs(seg - bg[y0:y1]).max(axis=2) > 10)[..., None]  # only the marks, not the sky
             f[y0:y1] = np.where(ink, seg[:, :, perm], seg)
