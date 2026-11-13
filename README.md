@@ -2,7 +2,7 @@
 
 Minimal, dark, glitchy cyberpunk wallpapers for phone and desktop, made with Python.
 
-![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001) on device mockups](examples/preview.jpg)
+![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001)](examples/preview.jpg)
 
 ## Install
 
