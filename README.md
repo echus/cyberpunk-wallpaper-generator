@@ -19,7 +19,7 @@ The script writes the images to the `out/` folder.
 
 ## Options
 
-- `--device phone|desktop`: Sets the image size and the layout. `phone` is 1290x2796 and is the default. `desktop` is 3840x2160.
+- `--device phone|desktop`: Sets the image size and the layout. `phone` is 1440x3120 and is the default. This size fits 19.5:9 phones, for example the Galaxy S25 Ultra and the iPhone Pro Max. `desktop` is 3840x2160.
 - `--count N`: Sets the number of images to make. The default is 1.
 - `--seed N`: Makes a specific image again. Each image has a number, the seed. The file name shows the seed. For example, `phone_sodium_000205.png` has the seed 205. The same seed and the same device give the same layout. You can change the colour or the glitch level and keep that layout. With `--count`, the script uses the seeds N, N+1, N+2 and so on.
 - `--palette NAME`: Sets the accent colour from a preset. The presets are `sodium` (orange, the default), `cyan`, `acid`, `magenta`, `red` and `uv`.

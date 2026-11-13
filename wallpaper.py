@@ -93,7 +93,7 @@ class Wallpaper:
             self.top, self.bottom = self.H * 0.34, self.H * 0.9
             self.n_groups, self.n_big = (4, 6), (1, 2)
             self.quiet_top = 0.3
-        k = min(w, h) / 1290  # detail scale: 1 on a phone, larger on big screens
+        k = min(w, h) / 1290  # detail scale relative to a 1290px-wide phone, so the look holds at any size
         self.u = 8 * ss * k
         self.font = load_font(int(10 * ss * k))
         self.font_b = load_font(int(11 * ss * k), index=1)  # Menlo Bold for stencil tags
@@ -1034,7 +1034,7 @@ class Wallpaper:
         return f
 
 
-DEVICES = {"phone": (1290, 2796), "desktop": (3840, 2160)}  # iPhone Pro Max, 4K
+DEVICES = {"phone": (1440, 3120), "desktop": (3840, 2160)}  # 19.5:9 QHD+ (fits iPhone Pro Max too), 4K
 
 
 def parse_hex(v):
@@ -1053,7 +1053,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--device", choices=sorted(DEVICES), default="phone",
-                    help="size/layout preset: phone 1290x2796, desktop 3840x2160")
+                    help="size/layout preset: phone 1440x3120, desktop 3840x2160")
     ap.add_argument("--palette", choices=sorted(PALETTES), default="sodium")
     ap.add_argument("--accent", type=parse_hex, default=None,
                     help="custom accent colour as hex, e.g. '#ff2a6d' (overrides --palette)")
