@@ -2,6 +2,11 @@
 
 Minimal, dark, glitchy cyberpunk wallpapers for phone and desktop, made with Python.
 
+<p align="center">
+  <img src="examples/phone_sodium_001001.jpg" alt="Phone wallpaper, seed 1001" height="380">
+  <img src="examples/desktop_sodium_002077.jpg" alt="Desktop wallpaper, seed 2077" height="380">
+</p>
+
 ## Install
 
 ```bash
