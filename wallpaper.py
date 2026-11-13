@@ -1027,11 +1027,10 @@ class Wallpaper:
             y1 = min(h, y0 + bh)
             f[y0:y1, x0:x0 + bw][on[: y1 - y0]] = col
 
-        # 5. faint global chromatic aberration
+        # 5. faint global chromatic aberration: red nudged 1px only, so thin grey
+        #    lines get a soft red/cyan edge instead of splitting into R/G/B lines
         if amt > 0.25:
-            k = 1 + int(amt * 2)
-            f[:, :, 0] = np.roll(f[:, :, 0], k, axis=1)
-            f[:, :, 2] = np.roll(f[:, :, 2], -k, axis=1)
+            f[:, :, 0] = np.roll(f[:, :, 0], 1, axis=1)
         return f
 
 
