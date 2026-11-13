@@ -1,6 +1,6 @@
 # cyberpunk-wallpaper-generator
 
-Minimal, dark, glitchy cyberpunk wallpapers for phone and desktop, made with Python.
+Generate minimal, glitchy cyberpunk wallpapers for phone and desktop.
 
 ![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001)](examples/preview.jpg)
 
