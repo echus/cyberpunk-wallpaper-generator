@@ -36,7 +36,8 @@ const LABELS = ['04', '07', '12', 'K-9', 'SYN', '0x3F', 'Δ118', 'MK.II', 'A/7',
   'IO', 'N.04', 'REF', '88', 'LNK', 'v2', 'AUX'];
 const HUD_LINES = ['TGT ACQ', 'RNG 2.41KM', 'BRG 047', 'ALT 0880', 'SYS NOMINAL', 'LOCK --',
   'VEL 312', 'GRID 44-N', 'ARM SAFE', 'LINK OK', 'TRK 03/12', 'HDG 271'];
-const TAGS = ['CAUTION', 'NO STEP', 'RESTRICTED', 'ARMED', 'HAZARD 04', 'UNIT 7', 'SECTOR C', 'LIVE'];
+// In TAGS and HUD_LINES, # becomes a random digit and @ becomes a random letter.
+const TAGS = ['CAUTION', 'RESTRICTED', 'ARMED', 'HAZARD ##', 'UNIT ##', 'SECTOR @', 'LIVE'];
 
 const FONT = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
 
@@ -691,7 +692,7 @@ class Wallpaper {
     const rng = this.rng;
     const u = this.u;
     const lines = rng.sample(HUD_LINES, rng.int(2, 4));
-    const tag = rng.pick(TAGS);
+    const tag = fill(rng, rng.pick(TAGS));
     const lineHeight = u * 1.8;
     const textWidth = Math.max(...lines.map((t) => this.measure(t)));
     const tagWidth = this.measure(tag, true) + u * 2.6;
@@ -709,7 +710,7 @@ class Wallpaper {
   planTag() {
     const rng = this.rng;
     const u = this.u;
-    const words = rng.sample(TAGS, rng.int(1, 3));
+    const words = rng.sample(TAGS, rng.int(1, 3)).map((t) => fill(rng, t));
     const bh = u * 1.9;
     const bw = Math.max(...words.map((t) => this.measure(t, true))) + u * 1.6 + bh * 0.5;
     const gap = u * 0.6;
@@ -1174,6 +1175,11 @@ const centre = (pts) => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.red
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 const polar = (cx, cy, r, angle) => [cx + Math.cos(angle) * r, cy + Math.sin(angle) * r];
 const range = (n) => Array.from({ length: n }, (_, i) => i);
+
+// Puts a random digit in place of each # and a random letter in place of each @.
+function fill(rng, template) {
+  return template.replace(/[#@]/g, (c) => (c === '#' ? String(rng.int(0, 9)) : rng.pick('ABCDEFGHJKLMNPRSTVXZ')));
+}
 const rad = (deg) => (deg * Math.PI) / 180;
 
 // The name of the plan function for a group type: 'hex' gives 'planHex'.
