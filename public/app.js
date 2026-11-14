@@ -1,6 +1,6 @@
 // Connects the controls on the page to the wallpaper generator.
 
-import { PALETTES, DEVICES, renderWallpaper } from './wallpaper.js';
+import { PALETTES, DEVICES, renderWallpaper, hexToRgb } from './wallpaper.js';
 
 const form = document.querySelector('#controls');
 const canvas = document.querySelector('#wallpaper');
@@ -67,7 +67,11 @@ document.querySelector('#download').addEventListener('click', () => {
 function draw() {
   status.textContent = 'Rendering…';
   // The page uses the wallpaper's accent colour too.
+  // Text on the accent is dark on a light accent and light on a dark accent.
+  const [r, g, b] = hexToRgb(form.accent.value);
+  const light = 0.299 * r + 0.587 * g + 0.114 * b > 100;
   document.documentElement.style.setProperty('--accent', form.accent.value);
+  document.documentElement.style.setProperty('--on-accent', light ? '#0b0c0f' : '#f2f3f5');
   requestAnimationFrame(() => setTimeout(() => {
     const start = performance.now();
     renderWallpaper(canvas, settings());

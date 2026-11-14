@@ -5,6 +5,7 @@
   --text: #b9bec8;
   --muted: #6b717c;
   --accent: #ff5c18;
+  --on-accent: #0b0c0f;
   color-scheme: dark;
 }
 
@@ -161,6 +162,17 @@ button {
 
 button:hover {
   border-color: var(--accent);
+}
+
+/* The main action is filled with the accent colour, so it stands out. */
+#download {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#download:hover {
+  filter: brightness(1.15);
 }
 
 #status {
