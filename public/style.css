@@ -253,6 +253,18 @@ button:hover {
   padding: 14px;
 }
 
+/* The preview frame has its notch at the top left. */
+.preview .frame::before {
+  background:
+    linear-gradient(var(--frame) 0 0) right top / calc(100% - var(--notch)) 1px,
+    linear-gradient(var(--frame) 0 0) right top / 1px 100%,
+    linear-gradient(var(--frame) 0 0) left bottom / 100% 1px,
+    linear-gradient(var(--frame) 0 0) left bottom / 1px calc(100% - var(--notch)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.6px), var(--frame) 0 calc(50% + 0.6px), transparent 0)
+      left top / var(--notch) var(--notch);
+  background-repeat: no-repeat;
+}
+
 /* The glitches on the preview frame are a mirror image of the ones on the controls. */
 .preview .frame::after {
   transform: scaleX(-1);
