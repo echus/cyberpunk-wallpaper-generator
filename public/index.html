@@ -12,33 +12,37 @@
     <form id="controls">
       <h1>cyberpunk wallpaper generator</h1>
 
-      <label>Device
-        <select name="device">
-          <option value="phone">Phone</option>
-          <option value="desktop">Desktop</option>
-        </select>
+      <label>Seed
+        <span class="joined">
+          <input name="seed" type="number" min="0" max="999999" step="1">
+          <button type="button" id="new-seed">New seed</button>
+        </span>
       </label>
 
-      <div class="pair">
-        <label>Width <input name="width" type="number" min="320" max="7680" step="1"></label>
-        <label>Height <input name="height" type="number" min="320" max="7680" step="1"></label>
-      </div>
+      <label>Device
+        <span class="stack">
+          <select name="device">
+            <option value="phone">Phone</option>
+            <option value="desktop">Desktop</option>
+            <option value="custom">Custom</option>
+          </select>
+          <span id="size" hidden>
+            <input name="width" type="number" min="320" max="7680" step="1" aria-label="Width">
+            <input name="height" type="number" min="320" max="7680" step="1" aria-label="Height">
+          </span>
+        </span>
+      </label>
 
-      <div class="pair">
+      <div class="pair" id="colour">
         <label>Colour <select name="palette"></select></label>
-        <label>Custom <input name="accent" type="color"></label>
+        <label id="custom" hidden>Custom <input name="accent" type="color"></label>
       </div>
-
-      <label>Seed <input name="seed" type="number" min="0" max="999999" step="1"></label>
 
       <label>Glitch <output name="glitchValue"></output>
         <input name="glitch" type="range" min="0" max="1" step="0.05">
       </label>
 
-      <div class="buttons">
-        <button type="button" id="new-seed">New seed</button>
-        <button type="button" id="download">Download PNG</button>
-      </div>
+      <button type="button" id="download">Download PNG</button>
 
       <p id="status" aria-live="polite"></p>
     </form>

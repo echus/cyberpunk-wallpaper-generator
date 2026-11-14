@@ -21,20 +21,23 @@ draw();
 
 // ------------------------------------------------------------ events
 
+// Width and height show only when the device is 'custom'. They start from the last size.
 form.device.addEventListener('change', () => {
-  setDevice(form.device.value);
+  const custom = form.device.value === 'custom';
+  document.querySelector('#size').hidden = !custom;
+  if (!custom) setDevice(form.device.value);
   draw();
 });
 
+// The colour picker shows only when the colour is 'custom'.
 form.palette.addEventListener('change', () => {
-  if (form.palette.value !== 'custom') form.accent.value = PALETTES[form.palette.value];
+  const custom = form.palette.value === 'custom';
+  document.querySelector('#custom').hidden = !custom;
+  if (!custom) form.accent.value = PALETTES[form.palette.value];
   draw();
 });
 
-form.accent.addEventListener('input', () => {
-  form.palette.value = presetFor(form.accent.value);
-  drawSoon();
-});
+form.accent.addEventListener('input', drawSoon);
 
 form.glitch.addEventListener('input', () => {
   showGlitchValue();
@@ -63,6 +66,8 @@ document.querySelector('#download').addEventListener('click', () => {
 // Draws the wallpaper. It waits one frame first, so the status text can show.
 function draw() {
   status.textContent = 'Rendering…';
+  // The page uses the wallpaper's accent colour too.
+  document.documentElement.style.setProperty('--accent', form.accent.value);
   requestAnimationFrame(() => setTimeout(() => {
     const start = performance.now();
     renderWallpaper(canvas, settings());
@@ -99,12 +104,6 @@ function setDevice(name) {
 
 function showGlitchValue() {
   form.glitchValue.value = Number(form.glitch.value).toFixed(2);
-}
-
-// The preset name for a colour, or 'custom'.
-function presetFor(color) {
-  const match = Object.entries(PALETTES).find(([, hex]) => hex === color.toLowerCase());
-  return match ? match[0] : 'custom';
 }
 
 // For example: phone_sodium_000205.png

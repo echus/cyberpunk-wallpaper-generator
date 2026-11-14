@@ -67,6 +67,15 @@ label {
   gap: 10px;
 }
 
+/* Without the custom colour picker, the colour list uses the full width. */
+#colour:has(#custom[hidden]) {
+  grid-template-columns: 1fr;
+}
+
+[hidden] {
+  display: none !important;
+}
+
 input,
 select,
 button {
@@ -76,6 +85,15 @@ button {
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 7px 8px;
+}
+
+/* The active field shows an accent border in place of the browser's outline.
+   It comes to the front, so a joined neighbour does not cover part of its border. */
+input:focus,
+select:focus {
+  position: relative;
+  outline: none;
+  border-color: var(--accent);
 }
 
 input[type="color"] {
@@ -88,10 +106,54 @@ input[type="range"] {
   accent-color: var(--accent);
 }
 
-.buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* A text box with a button joined to its right side. */
+.joined {
+  display: flex;
+}
+
+.joined input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+/* The button sits over the text box's right border, so the two share one line. */
+.joined button {
+  margin-left: -1px;
+  border-radius: 0 4px 4px 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Custom size: width and height boxes joined under the device list.
+   Joined parts overlap by 1 pixel, so they share one border line. */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.stack:has(#size:not([hidden])) select {
+  border-radius: 4px 4px 0 0;
+}
+
+#size {
+  display: flex;
+  margin-top: -1px;
+}
+
+#size input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0;
+}
+
+#size input:first-child {
+  border-bottom-left-radius: 4px;
+}
+
+#size input:last-child {
+  margin-left: -1px;
+  border-bottom-right-radius: 4px;
 }
 
 button {
