@@ -66,10 +66,11 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
   const count = (base) => rng.poisson(base * amount * 2);
   const sign = () => rng.pick([-1, 1]);
 
-  // 1. Thin bands of rows that slide sideways. Some also split into red and blue.
+  // 1. Bands of rows that slide sideways. Most are thin, about 1 in 4 is thick.
+  //    Some also split into red and blue.
   const slices = Math.max(1, count(3));
   for (let n = 0; n < slices; n++) {
-    const [y0, y1] = band(1, 28);
+    const [y0, y1] = rng.random() < 0.25 ? band(30, 110) : band(1, 28);
     shiftRows(data, w, y0, y1, sign() * rng.int(6, 29 + Math.floor(140 * amount)));
     if (rng.random() < 0.45) {
       const k = rng.int(2, 3 + Math.floor(10 * amount));
@@ -81,8 +82,8 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
   // 2. A block is cut out and moved over a little. Sometimes a light line shows at the cut.
   const blocks = count(1.5);
   for (let n = 0; n < blocks; n++) {
-    const [y0, y1] = band(20, 140);
-    const blockWidth = Math.floor(w * rng.uniform(0.15, 0.6));
+    const [y0, y1] = band(20, 240);
+    const blockWidth = Math.floor(w * rng.uniform(0.15, 0.7));
     const x0 = rng.int(0, w - blockWidth - 1);
     const dx = sign() * rng.int(8, 19 + Math.floor(80 * amount));
     moveBlock(data, w, x0, y0, blockWidth, y1 - y0, dx);
@@ -102,7 +103,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
     const y1 = Math.floor(bottom);
     const shears = rng.int(2, 4);
     for (let n = 0; n < shears; n++) {
-      const sliceHeight = rng.int(6, 69);
+      const sliceHeight = rng.int(6, 120);
       const sy = rng.int(y0, Math.max(y0 + 1, y1 - sliceHeight) - 1);
       const ey = Math.min(h, sy + sliceHeight);
       shiftRows(data, w, sy, ey, sign() * rng.int(15, 24 + Math.floor(160 * Math.min(amount, 1.5))));
