@@ -25,7 +25,9 @@ main {
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 24px;
+  max-width: 1800px;  /* On a very wide screen, the panel and preview stay near each other. */
   min-height: 100vh;
+  margin: 0 auto;
   padding: 24px;
 }
 
@@ -242,11 +244,19 @@ button:hover {
   font-size: 12px;
 }
 
+/* The panel is at the top left and the preview is at the bottom right. */
 .preview {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-end;
   min-width: 0;
+}
+
+/* On a narrow screen, the preview is below the panel, in the middle. */
+@media (max-width: 720px) {
+  .preview {
+    justify-content: center;
+  }
 }
 
 .preview .frame {
