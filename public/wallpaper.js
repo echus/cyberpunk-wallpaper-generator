@@ -32,12 +32,13 @@ const LINE = '#4a505b';   // normal lines
 const TEXT = '#565c66';   // text
 const SOLIDS = ['#131519', '#191b20', '#202329'];  // solid blocks
 
-const LABELS = ['04', '07', '12', 'K-9', 'SYN', '0x3F', 'Δ118', 'MK.II', 'A/7',
-  'IO', 'N.04', 'REF', '88', 'LNK', 'v2', 'AUX'];
-const HUD_LINES = ['TGT ACQ', 'RNG 2.41KM', 'BRG 047', 'ALT 0880', 'SYS NOMINAL', 'LOCK --',
-  'VEL 312', 'GRID 44-N', 'ARM SAFE', 'LINK OK', 'TRK 03/12', 'HDG 271'];
-// In TAGS and HUD_LINES, # becomes a random digit and @ becomes a random letter.
-const TAGS = ['CAUTION', 'RESTRICTED', 'ARMED', 'HAZARD ##', 'UNIT ##', 'SECTOR @', 'LIVE'];
+// Text on the wallpaper. Mostly short codes and numbers, with few real words.
+// # becomes a random digit and @ becomes a random letter.
+const LABELS = ['##', '##', '@-#', 'SYN', '0x##', 'Δ###', 'MK.II', '@/#',
+  'IO', 'N.##', 'REF', 'LNK', 'v#', 'AUX'];
+const HUD_LINES = ['TGT ##', 'RNG #.##', 'BRG ###', 'ALT ####', 'VEL ###', 'HDG ###',
+  'TRK ##/##', 'GRID ##-@', 'SYS 0x##', '@@ ###', '-- ##.#', 'Δ ##.##'];
+const TAGS = ['CAUTION', 'HAZARD ##', 'UNIT ##', 'SECTOR @', '@@-##', 'CL.#', 'LIVE'];
 
 const FONT = 'Menlo, Consolas, "DejaVu Sans Mono", monospace';
 
@@ -236,7 +237,7 @@ class Wallpaper {
 
   // A small code label. With no text, it uses a random label.
   label(x, y, text, color = TEXT) {
-    this.write(x, y, text ?? this.rng.pick(LABELS), color);
+    this.write(x, y, text ?? fill(this.rng, this.rng.pick(LABELS)), color);
   }
 
   // ------------------------------------------------------------ groups
@@ -502,7 +503,7 @@ class Wallpaper {
     const lines = rng.int(1, 3);
     const draw = (ox, oy, acc) => {
       for (let i = 0; i < lines; i++) {
-        const text = range(rng.int(1, 3)).map(() => rng.pick(LABELS)).join(' ');
+        const text = range(rng.int(1, 3)).map(() => fill(rng, rng.pick(LABELS))).join(' ');
         this.label(ox + u, oy + i * u * 1.8, text, i === 0 ? TEXT : DIM);
       }
       if (acc) this.poly([[ox, oy + 2], [ox + 3, oy + 2], [ox + 3, oy + u * 1.2], [ox, oy + u * 1.2]], { fill: this.accent, accent: true });
@@ -691,7 +692,7 @@ class Wallpaper {
   planReadout() {
     const rng = this.rng;
     const u = this.u;
-    const lines = rng.sample(HUD_LINES, rng.int(2, 4));
+    const lines = rng.sample(HUD_LINES, rng.int(2, 4)).map((t) => fill(rng, t));
     const tag = fill(rng, rng.pick(TAGS));
     const lineHeight = u * 1.8;
     const textWidth = Math.max(...lines.map((t) => this.measure(t)));
@@ -744,7 +745,7 @@ class Wallpaper {
     const u = this.u;
     const d = this.cw * rng.pick([0.4, 0.6, 0.8]);
     const run = this.cw * rng.pick([0.8, 1.1]);
-    const text = rng.pick(HUD_LINES);
+    const text = fill(rng, rng.pick(HUD_LINES));
     const th = this.fontSize + u * 0.6;
 
     const draw = (ox, oy, acc) => {
