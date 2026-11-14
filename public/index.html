@@ -33,10 +33,12 @@
         </span>
       </label>
 
-      <div class="pair" id="colour">
-        <label>Colour <select name="palette"></select></label>
-        <label id="custom" hidden>Custom <input name="accent" type="color"></label>
-      </div>
+      <label>Colour
+        <span class="stack">
+          <select name="palette"></select>
+          <input name="accent" type="color" id="custom" aria-label="Custom colour" hidden>
+        </span>
+      </label>
 
       <label>Glitch <output name="glitchValue"></output>
         <input name="glitch" type="range" min="0" max="1" step="0.05">

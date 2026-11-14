@@ -61,17 +61,6 @@ label {
   letter-spacing: 0.06em;
 }
 
-.pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-/* Without the custom colour picker, the colour list uses the full width. */
-#colour:has(#custom[hidden]) {
-  grid-template-columns: 1fr;
-}
-
 [hidden] {
   display: none !important;
 }
@@ -125,20 +114,30 @@ input[type="range"] {
   letter-spacing: normal;
 }
 
-/* Custom size: width and height boxes joined under the device list.
+/* A list with a field joined below it. The field shows only for the 'custom' choice.
    Joined parts overlap by 1 pixel, so they share one border line. */
 .stack {
   display: flex;
   flex-direction: column;
 }
 
-.stack:has(#size:not([hidden])) select {
+.stack > :not(select) {
+  margin-top: -1px;
+}
+
+/* When the field shows, the list has square bottom corners. */
+.stack:not(:has([hidden])) select {
   border-radius: 4px 4px 0 0;
 }
 
+.stack input[type="color"] {
+  width: 100%;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Custom size: width and height boxes side by side. */
 #size {
   display: flex;
-  margin-top: -1px;
 }
 
 #size input {
