@@ -9,7 +9,7 @@
 </head>
 <body>
   <main>
-    <form id="controls">
+    <form id="controls" class="frame">
       <h1>cyberpunk wallpaper generator</h1>
 
       <label>Seed
@@ -50,7 +50,9 @@
     </form>
 
     <div class="preview">
-      <canvas id="wallpaper" aria-label="Wallpaper preview"></canvas>
+      <div class="frame">
+        <canvas id="wallpaper" aria-label="Wallpaper preview"></canvas>
+      </div>
     </div>
   </main>
   <script type="module" src="app.js"></script>

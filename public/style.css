@@ -23,7 +23,7 @@ body {
 /* Controls on the left, preview on the right. On a narrow screen, the preview goes below. */
 main {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 24px;
   min-height: 100vh;
   padding: 24px;
@@ -50,6 +50,66 @@ form {
   flex-direction: column;
   gap: 14px;
   align-self: start;
+  padding: 20px;
+}
+
+/* A frame around the controls and around the preview. */
+.frame {
+  position: relative;
+  isolation: isolate;
+  /* The border colour: the accent, partly see-through so it blends with the page. */
+  --frame: color-mix(in srgb, var(--accent) 60%, transparent);
+  --notch: 22px;
+}
+
+/* The border: a thin line with a 45 degree notch at the bottom left.
+   Each side is a 1 pixel strip of colour. The notch is a diagonal line in a small square. */
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--frame) 0 0) left top / 100% 1px,
+    linear-gradient(var(--frame) 0 0) right top / 1px 100%,
+    linear-gradient(var(--frame) 0 0) right bottom / calc(100% - var(--notch)) 1px,
+    linear-gradient(var(--frame) 0 0) left top / 1px calc(100% - var(--notch)),
+    linear-gradient(to top right, transparent calc(50% - 0.6px), var(--frame) 0 calc(50% + 0.6px), transparent 0)
+      left bottom / var(--notch) var(--notch);
+  background-repeat: no-repeat;
+}
+
+/* A soft glow around the border and its glitches. */
+.frame::before,
+.frame::after {
+  filter: drop-shadow(0 0 3px var(--frame));
+}
+
+/* Glitches on the border. Each part is a small block of colour.
+   Blocks in the page colour cut a gap in the line. Accent blocks put the cut piece back, moved over.
+   This box is 8 pixels bigger than the panel on each side, so the border line is 8 pixels in. */
+.frame::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* A thick tab at the top left. */
+    linear-gradient(var(--frame) 0 0) 8px 5px / 64px 3px,
+    /* A piece of the top line, moved up and to the right. */
+    linear-gradient(var(--bg) 0 0) 150px 8px / 40px 1px,
+    linear-gradient(var(--frame) 0 0) 157px 4px / 40px 1px,
+    /* A piece of the right line, moved out. */
+    linear-gradient(var(--bg) 0 0) right 8px top 36% / 1px 52px,
+    linear-gradient(var(--frame) 0 0) right 3px top 37% / 1px 52px,
+    /* A short double line on the right, lower down. */
+    linear-gradient(var(--frame) 0 0) right 3px top 62% / 3px 10px,
+    /* Small data blocks under the bottom line. */
+    linear-gradient(var(--frame) 0 0) right 20px bottom 3px / 14px 2px,
+    linear-gradient(var(--frame) 0 0) right 38px bottom 3px / 4px 2px,
+    linear-gradient(var(--frame) 0 0) right 46px bottom 3px / 2px 2px;
+  background-repeat: no-repeat;
 }
 
 label {
@@ -189,11 +249,18 @@ button:hover {
   min-width: 0;
 }
 
-/* The canvas has the full wallpaper size. CSS makes it fit the screen. */
+.preview .frame {
+  padding: 14px;
+}
+
+/* The glitches on the preview frame are a mirror image of the ones on the controls. */
+.preview .frame::after {
+  transform: scaleX(-1);
+}
+
+/* The canvas has the full wallpaper size. CSS makes it fit the screen and the frame. */
 canvas {
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 48px);
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  max-height: calc(100vh - 48px - 28px);
 }
