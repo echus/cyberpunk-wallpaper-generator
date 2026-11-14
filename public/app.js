@@ -110,12 +110,9 @@ function showGlitchValue() {
   form.glitchValue.value = Number(form.glitch.value).toFixed(2);
 }
 
-// For example: phone_sodium_000205.png
+// For example: wallpaper-205.png
 function fileName() {
-  const { width, height, seed, accent } = settings();
-  const kind = width > height ? 'desktop' : 'phone';
-  const colour = form.palette.value === 'custom' ? accent.slice(1) : form.palette.value;
-  return `${kind}_${colour}_${String(seed).padStart(6, '0')}.png`;
+  return `wallpaper-${settings().seed}.png`;
 }
 
 function randomSeed() {
