@@ -14,9 +14,10 @@ form.palette.add(new Option('custom', 'custom'));
 setDevice(screen.height > screen.width ? 'phone' : 'desktop');  // A tall screen is a phone.
 form.palette.value = 'sodium';
 form.accent.value = PALETTES.sodium;
-form.seed.value = randomSeed();
+form.seed.value = seedFromAddress() ?? randomSeed();
 form.glitch.value = 0.5;
 showGlitchValue();
+history.replaceState(null, '', `?seed=${form.seed.value}`);
 draw();
 
 // ------------------------------------------------------------ events
@@ -44,10 +45,22 @@ form.glitch.addEventListener('input', () => {
   drawSoon();
 });
 
-for (const input of [form.width, form.height, form.seed]) input.addEventListener('change', draw);
+for (const input of [form.width, form.height]) input.addEventListener('change', draw);
+
+// Each new seed goes into the address (?seed=123), so the back button goes to the last seed.
+form.seed.addEventListener('change', () => {
+  saveSeed();
+  draw();
+});
 
 document.querySelector('#new-seed').addEventListener('click', () => {
   form.seed.value = randomSeed();
+  saveSeed();
+  draw();
+});
+
+window.addEventListener('popstate', () => {
+  form.seed.value = seedFromAddress() ?? randomSeed();
   draw();
 });
 
@@ -113,6 +126,15 @@ function showGlitchValue() {
 // For example: wallpaper-205.png
 function fileName() {
   return `wallpaper-${settings().seed}.png`;
+}
+
+// The seed in the address, or null if there is none.
+function seedFromAddress() {
+  return new URLSearchParams(location.search).get('seed');
+}
+
+function saveSeed() {
+  history.pushState(null, '', `?seed=${settings().seed}`);
 }
 
 function randomSeed() {
