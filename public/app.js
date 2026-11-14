@@ -11,7 +11,7 @@ for (const name of Object.keys(PALETTES)) form.palette.add(new Option(name, name
 form.palette.add(new Option('custom', 'custom'));
 
 // Start values.
-setDevice('phone');
+setDevice(screen.height > screen.width ? 'phone' : 'desktop');  // A tall screen is a phone.
 form.palette.value = 'sodium';
 form.accent.value = PALETTES.sodium;
 form.seed.value = randomSeed();
