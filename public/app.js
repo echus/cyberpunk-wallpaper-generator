@@ -10,31 +10,22 @@ const status = document.querySelector('#status');
 for (const name of Object.keys(PALETTES)) form.palette.add(new Option(name, name));
 form.palette.add(new Option('custom', 'custom'));
 
-// Start values.
-setDevice(screen.height > screen.width ? 'phone' : 'desktop');  // A tall screen is a phone.
-form.palette.value = 'sodium';
-form.accent.value = PALETTES.sodium;
-form.seed.value = seedFromAddress() ?? randomSeed();
-form.glitch.value = 0.5;
-showGlitchValue();
-history.replaceState(null, '', `?seed=${form.seed.value}`);
+// Start values come from the address. Values that are not in the address use the defaults.
+loadAddress();
 draw();
 
 // ------------------------------------------------------------ events
 
-// Width and height show only when the device is 'custom'. They start from the last size.
+// For 'custom', width and height start from the last size.
 form.device.addEventListener('change', () => {
-  const custom = form.device.value === 'custom';
-  document.querySelector('#size').hidden = !custom;
-  if (!custom) setDevice(form.device.value);
+  if (form.device.value !== 'custom') setDevice(form.device.value);
+  showCustomFields();
   draw();
 });
 
-// The colour picker shows only when the colour is 'custom'.
 form.palette.addEventListener('change', () => {
-  const custom = form.palette.value === 'custom';
-  document.querySelector('#custom').hidden = !custom;
-  if (!custom) form.accent.value = PALETTES[form.palette.value];
+  if (form.palette.value !== 'custom') form.accent.value = PALETTES[form.palette.value];
+  showCustomFields();
   draw();
 });
 
@@ -47,20 +38,20 @@ form.glitch.addEventListener('input', () => {
 
 for (const input of [form.width, form.height]) input.addEventListener('change', draw);
 
-// Each new seed goes into the address (?seed=123), so the back button goes to the last seed.
+// Each new seed adds a step to the browser history, so the back button goes to the last seed.
 form.seed.addEventListener('change', () => {
-  saveSeed();
+  history.pushState(null, '', address());
   draw();
 });
 
 document.querySelector('#new-seed').addEventListener('click', () => {
   form.seed.value = randomSeed();
-  saveSeed();
+  history.pushState(null, '', address());
   draw();
 });
 
 window.addEventListener('popstate', () => {
-  form.seed.value = seedFromAddress() ?? randomSeed();
+  loadAddress();
   draw();
 });
 
@@ -77,7 +68,9 @@ document.querySelector('#download').addEventListener('click', () => {
 // ------------------------------------------------------------ drawing
 
 // Draws the wallpaper. It waits one frame first, so the status text can show.
+// The address always shows the current settings, so a link gives the same wallpaper.
 function draw() {
+  history.replaceState(null, '', address());
   status.textContent = 'Rendering…';
   // The page uses the wallpaper's accent colour too, 20% lighter so it stands out on the dark page.
   // Text on the accent is dark on a light accent and light on a dark accent.
@@ -119,6 +112,12 @@ function setDevice(name) {
   form.height.value = h;
 }
 
+// Width and height show only for the 'custom' device. The colour picker shows only for the 'custom' colour.
+function showCustomFields() {
+  document.querySelector('#size').hidden = form.device.value !== 'custom';
+  document.querySelector('#custom').hidden = form.palette.value !== 'custom';
+}
+
 function showGlitchValue() {
   form.glitchValue.value = Number(form.glitch.value).toFixed(2);
 }
@@ -128,13 +127,51 @@ function fileName() {
   return `wallpaper-${settings().seed}.png`;
 }
 
-// The seed in the address, or null if there is none.
-function seedFromAddress() {
-  return new URLSearchParams(location.search).get('seed');
+// The settings as a page address, for example:
+// ?seed=205&device=phone&colour=sodium&glitch=0.5
+// ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&glitch=0.5
+function address() {
+  const { width, height, seed, accent, glitch } = settings();
+  const params = new URLSearchParams({ seed, device: form.device.value });
+  if (form.device.value === 'custom') {
+    params.set('w', width);
+    params.set('h', height);
+  }
+  params.set('colour', form.palette.value === 'custom' ? accent.slice(1) : form.palette.value);
+  params.set('glitch', glitch);
+  return `?${params}`;
 }
 
-function saveSeed() {
-  history.pushState(null, '', `?seed=${settings().seed}`);
+// Sets the controls from the page address.
+function loadAddress() {
+  const params = new URLSearchParams(location.search);
+
+  // Device: a tall screen gets the phone size, a wide screen gets the desktop size.
+  const device = params.get('device');
+  setDevice(DEVICES[device] ? device : screen.height > screen.width ? 'phone' : 'desktop');
+  if (device === 'custom') {
+    form.device.value = 'custom';
+    form.width.value = params.get('w') ?? form.width.value;
+    form.height.value = params.get('h') ?? form.height.value;
+  }
+
+  // Colour: a preset name, or a hex colour without the #.
+  const colour = params.get('colour') ?? 'sodium';
+  if (PALETTES[colour]) {
+    form.palette.value = colour;
+    form.accent.value = PALETTES[colour];
+  } else if (/^[0-9a-f]{6}$/i.test(colour)) {
+    form.palette.value = 'custom';
+    form.accent.value = `#${colour.toLowerCase()}`;
+  } else {
+    form.palette.value = 'sodium';
+    form.accent.value = PALETTES.sodium;
+  }
+
+  form.seed.value = params.get('seed') ?? randomSeed();
+  form.glitch.value = params.get('glitch') ?? 0.5;
+  showGlitchValue();
+  showCustomFields();
 }
 
 function randomSeed() {
