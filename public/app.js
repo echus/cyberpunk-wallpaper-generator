@@ -4,7 +4,6 @@ import { PALETTES, DEVICES, renderWallpaper, hexToRgb } from './wallpaper.js';
 
 const form = document.querySelector('#controls');
 const canvas = document.querySelector('#wallpaper');
-const status = document.querySelector('#status');
 
 // Fill the colour list from the presets.
 for (const name of Object.keys(PALETTES)) form.palette.add(new Option(name, name));
@@ -67,22 +66,17 @@ document.querySelector('#download').addEventListener('click', () => {
 
 // ------------------------------------------------------------ drawing
 
-// Draws the wallpaper. It waits one frame first, so the status text can show.
+// Draws the wallpaper.
 // The address always shows the current settings, so a link gives the same wallpaper.
 function draw() {
   history.replaceState(null, '', address());
-  status.textContent = 'Rendering…';
   // The page uses the wallpaper's accent colour too, 20% lighter so it stands out on the dark page.
   // Text on the accent is dark on a light accent and light on a dark accent.
   const [r, g, b] = hexToRgb(form.accent.value).map((v) => Math.round(v + (255 - v) * 0.2));
   const light = 0.299 * r + 0.587 * g + 0.114 * b > 145;
   document.documentElement.style.setProperty('--accent', `rgb(${r}, ${g}, ${b})`);
   document.documentElement.style.setProperty('--on-accent', light ? '#0b0c0f' : '#f2f3f5');
-  requestAnimationFrame(() => setTimeout(() => {
-    const start = performance.now();
-    renderWallpaper(canvas, settings());
-    status.textContent = `${canvas.width} × ${canvas.height} · ${Math.round(performance.now() - start)} ms`;
-  }));
+  renderWallpaper(canvas, settings());
 }
 
 // Draws after a short pause. Use this for sliders, so it does not draw on each small move.

@@ -32,6 +32,8 @@ npx wrangler deploy
 - **Glitch**: Sets the glitch level. `0` is clean.
 - **Download PNG**: Saves the wallpaper at full size.
 
+The page address holds all the settings, so a link opens the same wallpaper.
+
 ## Files
 
 - `public/wallpaper.js`: makes the shapes and the layout.
