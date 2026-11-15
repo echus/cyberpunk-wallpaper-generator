@@ -79,11 +79,11 @@ document.querySelector('#download').addEventListener('click', () => {
 // Draws the wallpaper. It waits one frame first, so the status text can show.
 function draw() {
   status.textContent = 'Rendering…';
-  // The page uses the wallpaper's accent colour too.
+  // The page uses the wallpaper's accent colour too, 20% lighter so it stands out on the dark page.
   // Text on the accent is dark on a light accent and light on a dark accent.
-  const [r, g, b] = hexToRgb(form.accent.value);
-  const light = 0.299 * r + 0.587 * g + 0.114 * b > 100;
-  document.documentElement.style.setProperty('--accent', form.accent.value);
+  const [r, g, b] = hexToRgb(form.accent.value).map((v) => Math.round(v + (255 - v) * 0.2));
+  const light = 0.299 * r + 0.587 * g + 0.114 * b > 145;
+  document.documentElement.style.setProperty('--accent', `rgb(${r}, ${g}, ${b})`);
   document.documentElement.style.setProperty('--on-accent', light ? '#0b0c0f' : '#f2f3f5');
   requestAnimationFrame(() => setTimeout(() => {
     const start = performance.now();
