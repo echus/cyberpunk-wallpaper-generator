@@ -20,20 +20,22 @@ body {
   font: 14px/1.4 Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 
-/* Controls on the left, preview on the right. On a narrow screen, the preview goes below. */
+/* Controls on the left, preview on the right, together in the middle of the page.
+   On a narrow screen, the preview goes below. */
 main {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 320px minmax(0, auto);
+  justify-content: center;
+  align-items: center;
   gap: 24px;
-  max-width: 1800px;  /* On a very wide screen, the panel and preview stay near each other. */
   min-height: 100vh;
-  margin: 0 auto;
   padding: 24px;
 }
 
 @media (max-width: 720px) {
   main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
     padding: 16px;
   }
 }
@@ -51,7 +53,6 @@ form {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  align-self: start;
   padding: 20px;
 }
 
@@ -244,19 +245,10 @@ button:hover {
   font-size: 12px;
 }
 
-/* The panel is at the top left and the preview is at the bottom right. */
 .preview {
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: center;
   min-width: 0;
-}
-
-/* On a narrow screen, the preview is below the panel, in the middle. */
-@media (max-width: 720px) {
-  .preview {
-    justify-content: center;
-  }
 }
 
 .preview .frame {
