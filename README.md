@@ -29,4 +29,4 @@ npx wrangler deploy
 - `public/random.js`: seeded random numbers.
 - `public/app.js`: connects the page controls to the generator.
 
-The first version was a Python script. It is at the [`v1-python`](https://github.com/echus/cyberpunk-wallpaper-generator/tree/v1-python) tag.
+This generator was previously a Python script available at the [v1-python](https://github.com/echus/cyberpunk-wallpaper-generator/tree/v1-python) tag.
