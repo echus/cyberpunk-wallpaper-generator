@@ -1,6 +1,6 @@
 # cyberpunk-wallpaper-generator
 
-Generate minimal, glitchy cyberpunk wallpapers for phone and desktop.
+Generate minimal, glitchy cyberpunk wallpapers.
 
 ![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001)](examples/preview.jpg)
 
@@ -21,19 +21,6 @@ The site runs as a Cloudflare Worker with static assets (see `wrangler.jsonc`).
 ```bash
 npx wrangler deploy
 ```
-
-## Controls
-
-- **Device**: Sets the size. Mobile is 1440x3120. Desktop is 3840x2160. Custom lets you set any size.
-- **Width, Height**: Set the size in pixels when the device is `custom`.
-- **Colour**: Sets a preset accent: `sodium`, `cadmium`, `rhodamine`, `uv`, `xenon`, `acid` or `custom`.
-- **Custom**: Sets any accent colour. It shows when the colour is `custom`.
-- **Seed**: Sets a seed for a reproducible layout. The file name shows the seed.
-- **Accents**: Sets how many elements use the accent colour, as well as the small bright block that every wallpaper has. The default is `1`. The most is the number of elements in the layout that can take the colour.
-- **Glitch**: Sets the glitch level. `0` is clean.
-- **Download PNG**: Saves the wallpaper at full size.
-
-The page address holds all the settings, so a link opens the same wallpaper.
 
 ## Files
 
