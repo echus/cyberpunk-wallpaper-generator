@@ -88,11 +88,8 @@ handle.addEventListener('pointerdown', (start) => {
 function draw() {
   history.replaceState(null, '', address());
   // The page uses the wallpaper's accent colour too, 20% lighter so it stands out on the dark page.
-  // Text on the accent is dark on a light accent and light on a dark accent.
   const [r, g, b] = hexToRgb(form.accent.value).map((v) => Math.round(v + (255 - v) * 0.2));
-  const light = 0.299 * r + 0.587 * g + 0.114 * b > 145;
   document.documentElement.style.setProperty('--accent', `rgb(${r}, ${g}, ${b})`);
-  document.documentElement.style.setProperty('--on-accent', light ? '#0b0c0f' : '#f2f3f5');
   renderWallpaper(canvas, settings());
 }
 
@@ -129,8 +126,10 @@ function showCustomFields() {
   document.querySelector('#custom').hidden = form.palette.value !== 'custom';
 }
 
+// Shows the glitch level as a number, and fills the slider track up to the handle.
 function showGlitchValue() {
   form.glitchValue.value = Number(form.glitch.value).toFixed(2);
+  form.glitch.style.setProperty('--fill', `${form.glitch.value * 100}%`);
 }
 
 // For example: wallpaper-205.png

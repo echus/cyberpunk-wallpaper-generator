@@ -5,7 +5,6 @@
   --text: #b9bec8;
   --muted: #6b717c;
   --accent: #ff5c18;
-  --on-accent: #0b0c0f;
   color-scheme: dark;
 }
 
@@ -92,7 +91,16 @@ h1 {
   font-weight: normal;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent);
+}
+
+/* The title looks highlighted: dark text on a white block. */
+#controls h1 {
+  align-self: flex-start;
+  padding: 2px 6px;
+  /* Tighter letters keep the title on one line. */
+  letter-spacing: 0.04em;
+  color: var(--bg);
+  background: white;
 }
 
 form {
@@ -131,6 +139,15 @@ form {
 /* A soft glow around the border. */
 .frame::before {
   filter: drop-shadow(0 0 3px var(--frame));
+}
+
+/* The controls have a white border with an accent glow behind it. */
+#controls {
+  --frame: color-mix(in srgb, white 85%, transparent);
+}
+
+#controls::before {
+  filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 6px var(--accent));
 }
 
 label {
@@ -172,9 +189,46 @@ input[type="color"] {
   padding: 2px;
 }
 
+/* The slider track is accent up to the handle and white after it.
+   app.js sets --fill to the handle position. */
 input[type="range"] {
+  appearance: none;
+  height: 16px;
   padding: 0;
-  accent-color: var(--accent);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), white 0);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), white 0);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
 }
 
 /* A text box with a button joined to its right side. */
@@ -245,15 +299,29 @@ button:hover {
   border-color: var(--accent);
 }
 
-/* The main action is filled with the accent colour, so it stands out. */
+/* Download looks like a link: bold white underlined text with an arrow on its left. */
 #download {
-  color: var(--on-accent);
-  background: var(--accent);
-  border-color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  color: white;
+  background: none;
+  font-weight: bold;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
+#download svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* It glows in the accent colour on hover. */
 #download:hover {
-  filter: brightness(1.15);
+  filter: drop-shadow(0 0 3px var(--accent));
 }
 
 @media (max-width: 720px) {
