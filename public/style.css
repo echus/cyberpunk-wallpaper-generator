@@ -4,7 +4,7 @@
   --line: #2a2e36;
   --text: #b9bec8;
   --muted: #6b717c;
-  --accent: #ff5c18;
+  /* --accent comes from app.js: the colour chosen in the panel. */
   color-scheme: dark;
 }
 
@@ -34,7 +34,7 @@ body {
     overflow: hidden;
   }
 
-  /* The controls start at the top left. Drag the title to move them (see app.js). */
+  /* The controls start at the top left. */
   #controls {
     position: fixed;
     top: 24px;
@@ -45,10 +45,27 @@ body {
     backdrop-filter: blur(6px);
   }
 
-  #controls h1 {
+  /* Drag any part of the controls that is not a field or a button (see app.js). */
+  #controls {
     cursor: grab;
     user-select: none;
     touch-action: none;
+  }
+
+  #controls :is(input, select, button) {
+    cursor: pointer;
+  }
+
+  /* The glitch setting does not drag. It also takes in half the gap above and below it,
+     so a slightly missed slider move does not move the panel. */
+  #controls label:has(input[type="range"]) {
+    margin: -7px 0;
+    padding: 7px 0;
+    cursor: default;
+  }
+
+  #controls input:not([type="range"]) {
+    cursor: text;
   }
 
   /* A grip in the top right corner shows that the panel moves. */
@@ -190,7 +207,8 @@ label:hover :is(input, select, button) {
   text-shadow: none;
 }
 
-label:hover :is(input:not([type="range"]), select, button) {
+/* The button inside a styled dropdown is part of the dropdown, so it does not get its own glow. */
+label:hover :is(input:not([type="range"]), select, button:not(select > button)) {
   border-color: var(--accent);
   box-shadow: 0 0 6px var(--accent);
 }
@@ -282,11 +300,26 @@ input[type="range"]::-moz-range-thumb {
     appearance: base-select;
   }
 
+  /* The chosen option is on the left and the arrow is at the right.
+     Firefox needs each of these rules. Chrome does them by default. */
   select {
+    display: flex;
+    flex-direction: row;
     align-items: center;
   }
 
+  select > button {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    color: inherit;
+    background: none;
+    border: 0;
+  }
+
   select::picker-icon {
+    margin-inline-start: auto;
     color: var(--muted);
   }
 
@@ -301,6 +334,8 @@ input[type="range"]::-moz-range-thumb {
   }
 
   option {
+    display: flex;
+    align-items: center;
     gap: 8px;
     padding: 6px 8px;
   }
@@ -330,6 +365,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* A small square of each colour, to the left of its name. The custom colour has a rainbow. */
 .swatch {
+  display: inline-block;
   flex: none;
   width: 10px;
   height: 10px;

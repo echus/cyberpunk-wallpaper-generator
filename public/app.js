@@ -1,6 +1,6 @@
 // Connects the controls on the page to the wallpaper generator.
 
-import { PALETTES, DEVICES, renderWallpaper, hexToRgb } from './wallpaper.js';
+import { PALETTES, DEVICES, renderWallpaper } from './wallpaper.js';
 
 const form = document.querySelector('#controls');
 const canvas = document.querySelector('#wallpaper');
@@ -71,11 +71,26 @@ document.querySelector('#download').addEventListener('click', () => {
   }, 'image/png');
 });
 
-// Drag the title to move the controls. They stay inside the window.
+// The up and down arrows step through a closed list, so the colour or device changes at once.
+// Styled lists open on these keys by default.
+for (const select of form.querySelectorAll('select')) {
+  select.addEventListener('keydown', (event) => {
+    if (!['ArrowUp', 'ArrowDown'].includes(event.key) || event.altKey || isOpen(select)) return;
+    event.preventDefault();
+    const index = select.selectedIndex + (event.key === 'ArrowDown' ? 1 : -1);
+    if (index < 0 || index >= select.options.length) return;
+    select.selectedIndex = index;
+    select.dispatchEvent(new Event('change'));
+  });
+}
+
+// Drag any part of the controls that is not a field, a button or the glitch setting to move them. They stay inside the window.
 // On a narrow screen the controls are part of the page and do not move.
-const handle = form.querySelector('h1');
-handle.addEventListener('pointerdown', (start) => {
+form.addEventListener('pointerdown', (start) => {
   if (getComputedStyle(form).position !== 'fixed') return;
+  // The glitch setting does not drag, so a slightly missed slider move does not move the panel.
+  if (start.button !== 0 || start.target.closest('input, select, button, label:has(input[type="range"])')) return;
+  start.preventDefault();
   const box = form.getBoundingClientRect();
   const move = (event) => {
     const x = box.left + event.clientX - start.clientX;
@@ -83,9 +98,9 @@ handle.addEventListener('pointerdown', (start) => {
     form.style.left = `${clamp(x, 0, Math.max(0, innerWidth - box.width))}px`;
     form.style.top = `${clamp(y, 0, Math.max(0, innerHeight - box.height))}px`;
   };
-  handle.setPointerCapture(start.pointerId);
-  handle.addEventListener('pointermove', move);
-  handle.addEventListener('pointerup', () => handle.removeEventListener('pointermove', move), { once: true });
+  form.setPointerCapture(start.pointerId);
+  form.addEventListener('pointermove', move);
+  form.addEventListener('pointerup', () => form.removeEventListener('pointermove', move), { once: true });
 });
 
 // ------------------------------------------------------------ drawing
@@ -94,9 +109,8 @@ handle.addEventListener('pointerdown', (start) => {
 // The address always shows the current settings, so a link gives the same wallpaper.
 function draw() {
   history.replaceState(null, '', address());
-  // The page uses the wallpaper's accent colour too, 20% lighter so it stands out on the dark page.
-  const [r, g, b] = hexToRgb(form.accent.value).map((v) => Math.round(v + (255 - v) * 0.2));
-  document.documentElement.style.setProperty('--accent', `rgb(${r}, ${g}, ${b})`);
+  // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
+  document.documentElement.style.setProperty('--accent', form.accent.value);
   renderWallpaper(canvas, settings());
 }
 
@@ -189,6 +203,15 @@ function loadAddress() {
   form.glitch.value = params.get('glitch') ?? 0.5;
   showGlitchValue();
   showCustomFields();
+}
+
+// True when the list of a styled dropdown shows. Browsers without :open never show a styled list.
+function isOpen(select) {
+  try {
+    return select.matches(':open');
+  } catch {
+    return false;
+  }
 }
 
 function randomSeed() {
