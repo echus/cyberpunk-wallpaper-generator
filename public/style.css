@@ -329,7 +329,6 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text);
     background: var(--panel);
     border: 1px solid var(--line);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
   }
 
   option {
@@ -486,13 +485,21 @@ button:hover {
   background-repeat: no-repeat;
 }
 
-/* On a wide screen, only the side lines of the preview border can show, because the wallpaper
-   fills the full height. Both lines go from top to bottom, with no gap for the notch. */
+/* On a wide screen the wallpaper fills the window in one direction, so only two lines of the
+   preview border can show. A wallpaper that fills the height has lines at its sides.
+   A wallpaper that fills the width has lines at its top and bottom. app.js sets data-fit. */
 @media (min-width: 721px) {
   .preview .frame::before {
     background:
       linear-gradient(var(--frame) 0 0) left top / 1px 100%,
       linear-gradient(var(--frame) 0 0) right top / 1px 100%;
+    background-repeat: no-repeat;
+  }
+
+  .preview[data-fit="width"] .frame::before {
+    background:
+      linear-gradient(var(--frame) 0 0) left top / 100% 1px,
+      linear-gradient(var(--frame) 0 0) left bottom / 100% 1px;
     background-repeat: no-repeat;
   }
 }
