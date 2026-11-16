@@ -30,7 +30,7 @@ After a change to the interface, remake `examples/preview.jpg` with:
 scripts/readme-image.sh
 ```
 
-The script needs macOS with Google Chrome. The seeds and settings in the image are in `scripts/readme-image.html`.
+The script needs Python 3 and Chrome or Chromium. The seeds and settings in the image are in `scripts/readme-image.html`.
 
 ## Files
 
