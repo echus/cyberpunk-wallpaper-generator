@@ -56,7 +56,7 @@ body {
     cursor: pointer;
   }
 
-  /* The glitch setting does not drag. It also takes in half the gap above and below it,
+  /* The slider settings do not drag. Each also takes in half the gap above and below it,
      so a slightly missed slider move does not move the panel. */
   #controls label:has(input[type="range"]) {
     margin: -7px 0;
@@ -445,7 +445,7 @@ button:hover {
   border-color: var(--accent);
 }
 
-/* Download looks like a link: bold white underlined text with an arrow on its left.
+/* Download looks like a link: bold white text with an arrow on its left.
    It sits at the right, with a little more space above it than between the settings. */
 #download {
   display: flex;
@@ -458,8 +458,6 @@ button:hover {
   color: white;
   background: none;
   font-weight: bold;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 #download svg {

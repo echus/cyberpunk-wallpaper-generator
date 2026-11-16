@@ -3,7 +3,8 @@
 // The wallpaper is a few groups of marks on a loose grid, with a lot of empty space.
 // Shapes of one type have the same size. They tile or mirror each other.
 // Large shapes only show at a screen edge, where the edge cuts them off.
-// Most of the picture is near-black and grey. One accent colour shows once or twice.
+// Most of the picture is near-black and grey. The accent colour shows on one small bright block
+// (the spark) and on a set number of other elements.
 
 import { Random } from './random.js';
 import { glitch, finish } from './effects.js';
@@ -67,17 +68,22 @@ const GROUPS = {
 // The HUD types. Each wallpaper gets one or two of them.
 const HUD = ['reticle', 'tape', 'ladder', 'readout', 'tag', 'callout'];
 
-// Makes a wallpaper. settings: { width, height, seed, accent: '#rrggbb', glitch: 0..1 }
+// Makes a wallpaper. settings: { width, height, seed, accent: '#rrggbb', accents, glitch: 0..1 }
+// accents: how many elements use the accent colour, as well as the spark.
+// Returns { maxAccents }: how many elements in this layout can use the accent colour.
 export function renderWallpaper(canvas, settings) {
-  new Wallpaper(settings).render(canvas);
+  const wallpaper = new Wallpaper(settings);
+  wallpaper.render(canvas);
+  return { maxAccents: wallpaper.maxAccents };
 }
 
 class Wallpaper {
-  constructor({ width, height, seed, accent, glitch }) {
+  constructor({ width, height, seed, accent, accents = 1, glitch }) {
     this.W = width;
     this.H = height;
     this.seed = seed;
     this.accent = accent;
+    this.accents = accents;
     this.glitchAmount = glitch;
     this.rng = new Random(seed);
 
@@ -1066,9 +1072,15 @@ class Wallpaper {
       this.line([[x0, y0], [x0 + L, y0 + rng.pick([1, -1]) * L]], FAINT);
     }
 
-    // The spark always uses the accent. Sometimes one more group uses it too.
+    // The spark always uses the accent. The accents setting is how many other groups use it.
+    // The groups come from one shuffled list, so a higher setting keeps the accents of a lower one.
+    // The random numbers used here do not depend on the setting, so the rest of the wallpaper
+    // stays the same. The first number is not used, but it keeps the layouts of older seeds.
     const canAccent = groups.map((g, i) => (g.accentOk ? i : -1)).filter((i) => i >= 0);
-    const accentGroups = new Set(rng.sample(canAccent, Math.min(canAccent.length, rng.pick([0, 1]))));
+    rng.random();
+    const order = rng.shuffle([...canAccent]);
+    this.maxAccents = canAccent.length;
+    const accentGroups = new Set(order.slice(0, this.accents));
 
     // Sometimes a thin line connects two small groups.
     const smallBoxes = groups.filter((g) => !g.bleed).map((g) => g.box);

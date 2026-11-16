@@ -29,6 +29,7 @@ npx wrangler deploy
 - **Colour**: Sets a preset accent: `sodium`, `cadmium`, `rhodamine`, `uv`, `xenon`, `acid` or `custom`.
 - **Custom**: Sets any accent colour. It shows when the colour is `custom`.
 - **Seed**: Sets a seed for a reproducible layout. The file name shows the seed.
+- **Accents**: Sets how many elements use the accent colour, as well as the small bright block that every wallpaper has. The default is `1`. The most is the number of elements in the layout that can take the colour.
 - **Glitch**: Sets the glitch level. `0` is clean.
 - **Download PNG**: Saves the wallpaper at full size.
 

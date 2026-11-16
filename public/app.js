@@ -37,8 +37,13 @@ form.palette.addEventListener('change', () => {
 
 form.accent.addEventListener('input', drawSoon);
 
+form.accents.addEventListener('input', () => {
+  showSliderValues();
+  drawSoon();
+});
+
 form.glitch.addEventListener('input', () => {
-  showGlitchValue();
+  showSliderValues();
   drawSoon();
 });
 
@@ -84,11 +89,11 @@ for (const select of form.querySelectorAll('select')) {
   });
 }
 
-// Drag any part of the controls that is not a field, a button or the glitch setting to move them. They stay inside the window.
+// Drag any part of the controls that is not a field, a button or a slider setting to move them. They stay inside the window.
 // On a narrow screen the controls are part of the page and do not move.
 form.addEventListener('pointerdown', (start) => {
   if (getComputedStyle(form).position !== 'fixed') return;
-  // The glitch setting does not drag, so a slightly missed slider move does not move the panel.
+  // The slider settings do not drag, so a slightly missed slider move does not move the panel.
   if (start.button !== 0 || start.target.closest('input, select, button, label:has(input[type="range"])')) return;
   start.preventDefault();
   const box = form.getBoundingClientRect();
@@ -108,10 +113,14 @@ form.addEventListener('pointerdown', (start) => {
 // Draws the wallpaper.
 // The address always shows the current settings, so a link gives the same wallpaper.
 function draw() {
-  history.replaceState(null, '', address());
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
-  renderWallpaper(canvas, settings());
+  const { maxAccents } = renderWallpaper(canvas, settings());
+  // The accents slider goes up to the number of elements in this layout that can use the accent.
+  // A value above the new maximum drops to it.
+  form.accents.max = maxAccents;
+  showSliderValues();
+  history.replaceState(null, '', address());
   showFit();
 }
 
@@ -140,6 +149,7 @@ function settings() {
     height: clamp(Math.round(form.height.value), 320, 7680),
     seed: clamp(Math.round(form.seed.value), 0, 999999),
     accent: form.accent.value,
+    accents: clamp(Math.round(form.accents.value), 0, 99),
     glitch: clamp(Number(form.glitch.value), 0, 1),
   };
 }
@@ -157,10 +167,14 @@ function showCustomFields() {
   document.querySelector('#custom').hidden = form.palette.value !== 'custom';
 }
 
-// Shows the glitch level as a number, and fills the slider track up to the handle.
-function showGlitchValue() {
+// Shows the value of each slider as a number, and fills each slider track up to the handle.
+function showSliderValues() {
+  form.accentsValue.value = form.accents.value;
   form.glitchValue.value = Number(form.glitch.value).toFixed(2);
-  form.glitch.style.setProperty('--fill', `${form.glitch.value * 100}%`);
+  for (const slider of [form.accents, form.glitch]) {
+    const fill = (slider.value - slider.min) / (slider.max - slider.min || 1);
+    slider.style.setProperty('--fill', `${fill * 100}%`);
+  }
 }
 
 // For example: wallpaper-205.png
@@ -169,16 +183,17 @@ function fileName() {
 }
 
 // The settings as a page address, for example:
-// ?seed=205&device=mobile&colour=sodium&glitch=0.5
-// ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&glitch=0.5
+// ?seed=205&device=mobile&colour=sodium&accents=1&glitch=0.5
+// ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&accents=3&glitch=0.5
 function address() {
-  const { width, height, seed, accent, glitch } = settings();
+  const { width, height, seed, accent, accents, glitch } = settings();
   const params = new URLSearchParams({ seed, device: form.device.value });
   if (form.device.value === 'custom') {
     params.set('w', width);
     params.set('h', height);
   }
   params.set('colour', form.palette.value === 'custom' ? accent.slice(1) : form.palette.value);
+  params.set('accents', accents);
   params.set('glitch', glitch);
   return `?${params}`;
 }
@@ -211,8 +226,11 @@ function loadAddress() {
   }
 
   form.seed.value = params.get('seed') ?? randomSeed();
+  // The slider's real maximum comes from the layout (see draw). Until then, any value is allowed.
+  form.accents.max = 99;
+  form.accents.value = params.get('accents') ?? 1;
   form.glitch.value = params.get('glitch') ?? 0.5;
-  showGlitchValue();
+  showSliderValues();
   showCustomFields();
 }
 
