@@ -151,8 +151,28 @@ label {
   gap: 6px;
   color: var(--muted);
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: bold;
+  text-transform: lowercase;
+}
+
+/* Only the setting names are bold, not the fields or the glitch value. */
+label > :not(.name) {
+  font-weight: normal;
+}
+
+/* The glitch value is on the same line as its name, at the right. The slider is below them. */
+label:has(output) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
+label:has(output) input {
+  grid-column: 1 / -1;
+}
+
+/* Each setting name starts with a prompt, like a terminal. Screen readers skip it. */
+.name::before {
+  content: "> " / "";
 }
 
 /* A setting glows when the mouse is over it: the name turns white and the fields get an accent glow. */
