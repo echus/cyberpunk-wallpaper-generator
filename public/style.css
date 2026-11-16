@@ -57,11 +57,8 @@ body {
   cursor: pointer;
 }
 
-/* The slider settings do not drag. Each also takes in half the gap above and below it,
-   so a slightly missed slider move does not move the panel. */
+/* The slider settings do not drag, so a slightly missed slider move does not move the panel. */
 #controls label:has(input[type="range"]) {
-  margin: -7px 0;
-  padding: 7px 0;
   cursor: default;
 }
 
@@ -183,56 +180,74 @@ form {
   filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 6px var(--accent));
 }
 
+/* Each setting is one row: its name in a box on the left, joined to its field.
+   The name box is as tall as the field, and all name boxes have the same width. */
 label {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
   color: var(--muted);
   font-size: 12px;
   font-weight: bold;
   text-transform: lowercase;
 }
 
-/* Only the setting names are bold, not the fields or the glitch value. */
 label > :not(.name) {
+  flex: 1;
+  min-width: 0;
   font-weight: normal;
 }
 
-/* The glitch value is on the same line as its name, at the right. The slider is below them. */
-label:has(output) {
-  display: grid;
-  grid-template-columns: 1fr auto;
+.name {
+  display: flex;
+  align-items: center;
+  flex: none;
+  width: calc(7ch + 18px);
+  margin-right: -1px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
 }
 
-label:has(output) input {
-  grid-column: 1 / -1;
+/* A slider in a box like the other fields, with its value at the right. */
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
 }
 
-/* Each setting name starts with a prompt, like a terminal. Screen readers skip it. */
-.name::before {
-  content: ">" / "";
-  margin-right: 1ch;
+.slider input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.slider output {
+  min-width: 4ch;
+  color: var(--text);
+  text-align: right;
 }
 
 /* A setting glows when the mouse is over it: the name turns white and the fields get an accent glow. */
 label,
-label :is(input, select, button) {
+label :is(.name, .slider, input, select, button) {
   transition: color 0.15s, text-shadow 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
+/* The whole row glows, so the joined boxes do not each glow over their neighbours. */
 label:hover {
   color: white;
   text-shadow: 0 0 6px var(--accent);
+  box-shadow: 0 0 6px var(--accent);
 }
 
-label:hover :is(input, select, button) {
+label:hover :is(input, select, button, output) {
   text-shadow: none;
 }
 
-/* The button inside a styled dropdown is part of the dropdown, so it does not get its own glow. */
-label:hover :is(input:not([type="range"]), select, button:not(select > button)) {
+/* The button inside a styled dropdown is part of the dropdown, so it does not get its own border. */
+label:hover :is(.name, .slider, input:not([type="range"]), select, button:not(select > button)) {
   border-color: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
 }
 
 label:hover input[type="range"]::-webkit-slider-thumb {
@@ -422,6 +437,18 @@ input[type="range"]::-moz-range-thumb {
   letter-spacing: normal;
 }
 
+/* Generate is the main action, so it has an accent border and white text.
+   It comes to the front, so its whole border shows over the text box. */
+#new-seed {
+  position: relative;
+  color: white;
+  border-color: var(--accent);
+}
+
+#new-seed:hover {
+  box-shadow: 0 0 6px var(--accent);
+}
+
 /* A list with a field joined below it. The field shows only for the 'custom' choice.
    Joined parts overlap by 1 pixel, so they share one border line. */
 .stack {
@@ -511,17 +538,6 @@ button:hover {
   #download {
     align-self: center;
     margin-top: 2px;
-  }
-
-  /* The fields explain themselves, so their names are hidden. Screen readers still read them.
-     The sliders keep their names, because a slider alone does not say what it sets. */
-  label:not(:has(output)) > .name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   /* Device, accents and glitch are folded into one section under the colour.

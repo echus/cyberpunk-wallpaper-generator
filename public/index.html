@@ -29,7 +29,7 @@
       <label><span class="name">Seed</span>
         <span class="joined">
           <input name="seed" type="number" min="0" max="999999" step="1">
-          <button type="button" id="new-seed">new seed</button>
+          <button type="button" id="new-seed">generate</button>
         </span>
       </label>
 
@@ -80,12 +80,18 @@
           </span>
         </label>
 
-        <label><span class="name">Accents</span> <output name="accentsValue"></output>
-          <input name="accents" type="range" min="0" max="99" step="1">
+        <label><span class="name">Accents</span>
+          <span class="slider">
+            <input name="accents" type="range" min="0" max="99" step="1">
+            <output name="accentsValue"></output>
+          </span>
         </label>
 
-        <label><span class="name">Glitch</span> <output name="glitchValue"></output>
-          <input name="glitch" type="range" min="0" max="1" step="0.05">
+        <label><span class="name">Glitch</span>
+          <span class="slider">
+            <input name="glitch" type="range" min="0" max="1" step="0.05">
+            <output name="glitchValue"></output>
+          </span>
         </label>
       </div>
 
