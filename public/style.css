@@ -435,12 +435,14 @@ button:hover {
   border-color: var(--accent);
 }
 
-/* Download looks like a link: bold white underlined text with an arrow on its left. */
+/* Download looks like a link: bold white underlined text with an arrow on its left.
+   It sits at the right, with a little more space above it than between the settings. */
 #download {
   display: flex;
   align-items: center;
   gap: 8px;
-  align-self: flex-start;
+  align-self: flex-end;
+  margin-top: 8px;
   padding: 0;
   border: 0;
   color: white;
