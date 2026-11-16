@@ -263,8 +263,10 @@ function loadAddress() {
 
   form.seed.value = params.get('seed') ?? randomSeed();
   // The slider's real maximum comes from the layout (see draw). Until then, any value is allowed.
+  // A mobile wallpaper starts with 2 accents, because it is small and has fewer elements.
+  // Other sizes start with 1.
   form.accents.max = 99;
-  form.accents.value = params.get('accents') ?? 1;
+  form.accents.value = params.get('accents') ?? (form.device.value === 'mobile' ? 2 : 1);
   form.glitch.value = params.get('glitch') ?? 0.5;
   showSliderValues();
   showCustomFields();
