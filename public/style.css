@@ -557,6 +557,13 @@ button:hover {
   background-repeat: no-repeat;
 }
 
+/* On a narrow screen the wallpaper has no border, so the small screen looks less busy. */
+@media (max-width: 720px) {
+  .preview .frame::before {
+    display: none;
+  }
+}
+
 /* The canvas has the full wallpaper size. CSS makes it fit the screen. */
 canvas {
   display: block;
