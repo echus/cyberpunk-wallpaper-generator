@@ -11,7 +11,7 @@ for (const name of [...Object.keys(PALETTES), 'custom']) {
   const option = new Option('', name);
   const swatch = document.createElement('span');
   swatch.className = 'swatch';
-  if (PALETTES[name]) swatch.style.background = PALETTES[name];
+  if (PALETTES[name]) swatch.style.setProperty('--swatch', PALETTES[name]);
   option.append(swatch, name);
   form.palette.add(option);
 }

@@ -8,14 +8,14 @@
 import { Random } from './random.js';
 import { glitch, finish } from './effects.js';
 
-// Accent colour presets.
+// Accent colour presets, in the order of the colour list.
 export const PALETTES = {
   sodium: '#ff5c18',
-  xenon: '#00c4ff',
   acid: '#baff12',
   rhodamine: '#ff0f80',
-  cadmium: '#c40018',
   uv: '#522ede',
+  xenon: '#00c4ff',
+  cadmium: '#c40018',
 };
 
 // Image sizes in pixels. Phone is 19.5:9 (Galaxy S25 Ultra, iPhone Pro Max). Desktop is 4K.
