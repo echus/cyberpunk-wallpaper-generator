@@ -21,10 +21,9 @@ body {
   font: 14px/1.4 Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 
-/* The preview fills the window and the controls float over it. */
-body {
-  overflow: hidden;
-}
+/* The preview fills the window and the controls float over it.
+   Both are fixed, so the page never scrolls. The page does not block scrolling either,
+   because a phone needs that to pull down and reload. */
 
 /* The controls start at the top left. On a narrow screen they are closer to the corner and fit the screen. */
 #controls {
