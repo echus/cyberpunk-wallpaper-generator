@@ -11,9 +11,9 @@ import { glitch, finish } from './effects.js';
 // Accent colour presets.
 export const PALETTES = {
   sodium: '#ff5c18',
-  cyan: '#00e2ff',
+  xenon: '#00c4ff',
   acid: '#baff12',
-  magenta: '#ff2478',
+  rhodamine: '#ff0f80',
   cadmium: '#c40018',
   uv: '#522ede',
 };

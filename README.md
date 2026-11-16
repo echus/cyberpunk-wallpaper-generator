@@ -26,7 +26,7 @@ npx wrangler deploy
 
 - **Device**: Sets the size. Phone is 1440x3120. Desktop is 3840x2160. Custom lets you set any size.
 - **Width, Height**: Set the size in pixels when the device is `custom`.
-- **Colour**: Sets a preset accent: `sodium`, `cyan`, `acid`, `magenta`, `cadmium`, `uv` or `custom`.
+- **Colour**: Sets a preset accent: `sodium`, `xenon`, `acid`, `rhodamine`, `cadmium`, `uv` or `custom`.
 - **Custom**: Sets any accent colour. It shows when the colour is `custom`.
 - **Seed**: Sets a seed for a reproducible layout. The file name shows the seed.
 - **Glitch**: Sets the glitch level. `0` is clean.
