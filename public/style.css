@@ -41,7 +41,7 @@ body {
     left: 24px;
     z-index: 1;
     width: 320px;
-    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    background: color-mix(in srgb, var(--bg) 30%, transparent);
     backdrop-filter: blur(6px);
   }
 
@@ -153,10 +153,11 @@ form {
   filter: drop-shadow(0 0 3px var(--frame));
 }
 
-/* The controls and the wallpaper have a white border with an accent glow behind it. */
+/* The controls and the wallpaper have a mostly see-through white border, so it looks grey,
+   with an accent glow behind it. */
 #controls,
 .preview .frame {
-  --frame: color-mix(in srgb, white 85%, transparent);
+  --frame: color-mix(in srgb, white 15%, transparent);
 }
 
 #controls::before,
