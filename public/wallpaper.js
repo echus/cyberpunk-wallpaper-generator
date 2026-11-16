@@ -14,7 +14,7 @@ export const PALETTES = {
   cyan: '#00e2ff',
   acid: '#baff12',
   magenta: '#ff2478',
-  redline: '#c8101e',
+  cadmium: '#c40018',
   uv: '#522ede',
 };
 
