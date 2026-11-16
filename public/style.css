@@ -363,6 +363,16 @@ input[type="range"]::-moz-range-thumb {
   }
 }
 
+/* A small line icon for each device, to the left of its name. */
+.icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+
 /* A small glowing parallelogram of each colour, to the left of its name. app.js sets --swatch.
    The custom colour has a rainbow with a white glow. */
 .swatch {

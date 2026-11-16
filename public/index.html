@@ -21,10 +21,29 @@
 
       <label><span class="name">Device</span>
         <span class="stack">
+          <!-- Each device has an icon to the left of its name. -->
           <select name="device">
-            <option value="mobile">mobile</option>
-            <option value="desktop">desktop</option>
-            <option value="custom">custom</option>
+            <button><selectedcontent></selectedcontent></button>
+            <option value="mobile">
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="4.5" y="1.5" width="7" height="13" rx="1" />
+                <path d="M7 12.5h2" />
+              </svg>
+              mobile
+            </option>
+            <option value="desktop">
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="1.5" y="2.5" width="13" height="9" rx="0.5" />
+                <path d="M8 11.5v3M5 14.5h6" />
+              </svg>
+              desktop
+            </option>
+            <option value="custom">
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4" />
+              </svg>
+              custom
+            </option>
           </select>
           <span id="size" hidden>
             <input name="width" type="number" min="320" max="7680" step="1" aria-label="Width">
