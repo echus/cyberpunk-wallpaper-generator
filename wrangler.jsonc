@@ -4,5 +4,9 @@
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./public"
-  }
+  },
+  // The site's address. Cloudflare makes the DNS record and the certificate on deploy.
+  "routes": [
+    { "pattern": "wallpaper.echus.co", "custom_domain": true }
+  ]
 }
