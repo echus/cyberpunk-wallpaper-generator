@@ -4,8 +4,10 @@
   --line: #2a2e36;
   --text: #b9bec8;
   --muted: #6b717c;
-  /* A faint grid of dots behind the wallpaper. */
-  --dots: radial-gradient(#1c1f25 1px, transparent 1.5px) 0 0 / 24px 24px;
+  /* The space around the wallpaper: a slightly lighter grey with a faint grid of dots,
+     so the wallpaper's own darker edges stand out from it. */
+  --surround: #121418;
+  --dots: radial-gradient(#22262d 1px, transparent 1.5px) 0 0 / 24px 24px;
   /* --accent comes from app.js: the colour chosen in the panel. */
   color-scheme: dark;
 }
@@ -79,7 +81,7 @@ body {
 
 /* The wallpaper is as big as it can be without cutting any of it off.
    A phone wallpaper on a desktop screen uses the full height, in the middle.
-   A faint grid of dots fills the space around it. */
+   The lighter dotted grey fills the space around it. The wallpaper has no border. */
 .preview {
   position: fixed;
   inset: 0;
@@ -87,17 +89,12 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--dots);
+  background: var(--dots), var(--surround);
 }
 
 canvas {
   max-width: 100vw;
   max-height: 100dvh;
-}
-
-/* The border is just outside the wallpaper, so it shows only where there is space around it. */
-.preview .frame::before {
-  inset: -1px;
 }
 
 h1 {
@@ -120,7 +117,7 @@ form {
   padding: 20px;
 }
 
-/* A frame around the controls and around the preview. */
+/* A frame around the controls. */
 .frame {
   position: relative;
   isolation: isolate;
@@ -151,15 +148,13 @@ form {
   filter: drop-shadow(0 0 3px var(--frame));
 }
 
-/* The controls and the wallpaper have a mostly see-through white border, so it looks grey,
+/* The controls have a mostly see-through white border, so it looks grey,
    with an accent glow behind it. */
-#controls,
-.preview .frame {
+#controls {
   --frame: color-mix(in srgb, white 15%, transparent);
 }
 
-#controls::before,
-.preview .frame::before {
+#controls::before {
   filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 6px var(--accent));
 }
 
@@ -535,30 +530,6 @@ button:hover {
   }
 
   #more-toggle[aria-expanded="false"] + #more {
-    display: none;
-  }
-}
-
-/* The wallpaper fills the window in one direction, so only two lines of the preview border
-   can show. A wallpaper that fills the height has lines at its sides.
-   A wallpaper that fills the width has lines at its top and bottom. app.js sets data-fit. */
-.preview .frame::before {
-  background:
-    linear-gradient(var(--frame) 0 0) left top / 1px 100%,
-    linear-gradient(var(--frame) 0 0) right top / 1px 100%;
-  background-repeat: no-repeat;
-}
-
-.preview[data-fit="width"] .frame::before {
-  background:
-    linear-gradient(var(--frame) 0 0) left top / 100% 1px,
-    linear-gradient(var(--frame) 0 0) left bottom / 100% 1px;
-  background-repeat: no-repeat;
-}
-
-/* On a narrow screen the wallpaper has no border, so the small screen looks less busy. */
-@media (max-width: 720px) {
-  .preview .frame::before {
     display: none;
   }
 }

@@ -157,17 +157,7 @@ function draw() {
   form.accents.max = maxAccents;
   showSliderValues();
   history.replaceState(null, '', address());
-  showFit();
 }
-
-// Tells the page whether the wallpaper fills the window's width or its height.
-// The preview border shows only on the sides where there is space (see style.css).
-function showFit() {
-  const { width, height } = settings();
-  document.querySelector('.preview').dataset.fit =width / height > innerWidth / innerHeight ? 'width' : 'height';
-}
-
-window.addEventListener('resize', showFit);
 
 // Draws after a short pause. Use this for sliders, so it does not draw on each small move.
 let timer;
