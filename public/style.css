@@ -374,8 +374,8 @@ input[type="range"]::-moz-range-thumb {
   stroke-width: 1.25;
 }
 
-/* A small glowing parallelogram of each colour, to the left of its name. app.js sets --swatch.
-   The custom colour has a rainbow with a white glow. */
+/* A small parallelogram of each colour, to the left of its name. app.js sets --swatch.
+   The custom colour has a rainbow. */
 .swatch {
   display: inline-block;
   flex: none;
@@ -383,13 +383,7 @@ input[type="range"]::-moz-range-thumb {
   height: 9px;
   margin: 0 2px;
   transform: skewX(-20deg);
-  background: var(--swatch);
-  box-shadow: 0 0 4px var(--swatch), 0 0 8px var(--swatch);
-}
-
-.swatch:not([style]) {
-  --swatch: color-mix(in srgb, white 50%, transparent);
-  background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+  background: var(--swatch, conic-gradient(red, yellow, lime, cyan, blue, magenta, red));
 }
 
 /* A text box with a button joined to its right side. */
