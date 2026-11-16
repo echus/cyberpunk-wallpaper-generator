@@ -12,11 +12,11 @@ The site is static files in `public/`. It has no build step and no dependencies.
 npx wrangler dev
 ```
 
-Any static file server also works, for example `python3 -m http.server -d public`.
+Any static file server also works, e.g. `python3 -m http.server -d public`.
 
 ## Deploy
 
-The site runs as a Cloudflare Worker with static assets (see `wrangler.jsonc`).
+Deploy via Cloudflare with:
 
 ```bash
 npx wrangler deploy
