@@ -89,10 +89,17 @@ for (const select of form.querySelectorAll('select')) {
   });
 }
 
-// Drag any part of the controls that is not a field, a button or a slider setting to move them. They stay inside the window.
-// On a narrow screen the controls are part of the page and do not move.
+// On a narrow screen, device, accents and glitch are folded into one section (see style.css).
+// The 'more settings' button opens and folds it. On a wide screen the button is hidden.
+const moreToggle = document.querySelector('#more-toggle');
+moreToggle.addEventListener('click', () => {
+  const open = moreToggle.getAttribute('aria-expanded') !== 'true';
+  moreToggle.setAttribute('aria-expanded', open);
+});
+
+// Drag any part of the controls that is not a field, a button or a slider setting to move them.
+// This works with a mouse or a finger. The controls stay inside the window.
 form.addEventListener('pointerdown', (start) => {
-  if (getComputedStyle(form).position !== 'fixed') return;
   // The slider settings do not drag, so a slightly missed slider move does not move the panel.
   if (start.button !== 0 || start.target.closest('input, select, button, label:has(input[type="range"])')) return;
   start.preventDefault();
