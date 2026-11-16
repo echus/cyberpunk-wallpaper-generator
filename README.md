@@ -2,7 +2,7 @@
 
 Generate minimal, glitchy cyberpunk wallpapers.
 
-![Desktop wallpaper (seed 2077) and phone wallpaper (seed 1001)](examples/preview.jpg)
+![The app on a desktop (seed 570791) and on a phone (seed 532919), both in sodium](examples/preview.jpg)
 
 ## Run locally
 
