@@ -10,7 +10,7 @@
 <body>
   <main>
     <form id="controls" class="frame">
-      <h1>cyberpunk wallpaper generator</h1>
+      <h1>&gt; wallpaper.exe</h1>
 
       <label>Seed
         <span class="joined">
@@ -35,7 +35,10 @@
 
       <label>Colour
         <span class="stack">
-          <select name="palette"></select>
+          <!-- The button shows the chosen colour with its swatch. app.js adds the options. -->
+          <select name="palette">
+            <button><selectedcontent></selectedcontent></button>
+          </select>
           <input name="accent" type="color" id="custom" aria-label="Custom colour" hidden>
         </span>
       </label>

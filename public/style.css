@@ -93,14 +93,9 @@ h1 {
   text-transform: uppercase;
 }
 
-/* The title looks highlighted: dark text on a white block. */
 #controls h1 {
-  align-self: flex-start;
-  padding: 2px 6px;
-  /* Tighter letters keep the title on one line. */
-  letter-spacing: 0.04em;
-  color: var(--bg);
-  background: white;
+  color: white;
+  font-weight: bold;
 }
 
 form {
@@ -158,6 +153,34 @@ label {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* A setting glows when the mouse is over it: the name turns white and the fields get an accent glow. */
+label,
+label :is(input, select, button) {
+  transition: color 0.15s, text-shadow 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+label:hover {
+  color: white;
+  text-shadow: 0 0 6px var(--accent);
+}
+
+label:hover :is(input, select, button) {
+  text-shadow: none;
+}
+
+label:hover :is(input:not([type="range"]), select, button) {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+label:hover input[type="range"]::-webkit-slider-thumb {
+  box-shadow: 0 0 10px var(--accent);
+}
+
+label:hover input[type="range"]::-moz-range-thumb {
+  box-shadow: 0 0 10px var(--accent);
 }
 
 [hidden] {
@@ -229,6 +252,69 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 6px var(--accent);
+}
+
+/* Dropdown lists in the page style, in browsers that allow it.
+   Other browsers show their own lists. */
+@supports (appearance: base-select) {
+  select,
+  ::picker(select) {
+    appearance: base-select;
+  }
+
+  select {
+    align-items: center;
+  }
+
+  select::picker-icon {
+    color: var(--muted);
+  }
+
+  ::picker(select) {
+    margin-top: 4px;
+    padding: 4px 0;
+    color: var(--text);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  option {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  /* The chosen option is white. The option under the mouse is white on a faint accent. */
+  option::checkmark {
+    display: none;
+  }
+
+  option:checked {
+    color: white;
+  }
+
+  option:hover,
+  option:focus-visible {
+    outline: none;
+    color: white;
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+
+  selectedcontent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* A small square of each colour, to the left of its name. The custom colour has a rainbow. */
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
 }
 
 /* A text box with a button joined to its right side. */

@@ -5,9 +5,16 @@ import { PALETTES, DEVICES, renderWallpaper, hexToRgb } from './wallpaper.js';
 const form = document.querySelector('#controls');
 const canvas = document.querySelector('#wallpaper');
 
-// Fill the colour list from the presets.
-for (const name of Object.keys(PALETTES)) form.palette.add(new Option(name, name));
-form.palette.add(new Option('custom', 'custom'));
+// Fill the colour list from the presets. Each colour has a small swatch to the left of its name.
+// Browsers that cannot style the list show only the names.
+for (const name of [...Object.keys(PALETTES), 'custom']) {
+  const option = new Option('', name);
+  const swatch = document.createElement('span');
+  swatch.className = 'swatch';
+  if (PALETTES[name]) swatch.style.background = PALETTES[name];
+  option.append(swatch, name);
+  form.palette.add(option);
+}
 
 // Start values come from the address. Values that are not in the address use the defaults.
 loadAddress();
