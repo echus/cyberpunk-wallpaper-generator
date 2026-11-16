@@ -6,7 +6,7 @@ Generate minimal, glitchy cyberpunk wallpapers.
 
 ## Run locally
 
-The site is static files in `public/`. It has no build step and no dependencies.
+The site is static files in `public/`.
 
 ```bash
 npx wrangler dev
@@ -27,10 +27,11 @@ npx wrangler deploy
 After a change to the interface, remake `examples/preview.jpg` with:
 
 ```bash
-scripts/readme-image.sh
+npm install
+npm run readme-image
 ```
 
-The script needs Python 3 and Chrome or Chromium. The seeds and settings in the image are in `scripts/readme-image.html`.
+The script uses the installed Chrome. Set `CHROME` to a browser's path to use another one.
 
 ## Files
 
@@ -38,6 +39,6 @@ The script needs Python 3 and Chrome or Chromium. The seeds and settings in the 
 - `public/effects.js`: glitches, vignette and grain.
 - `public/random.js`: seeded random numbers.
 - `public/app.js`: connects the page controls to the generator.
-- `scripts/readme-image.sh`: takes the README image of `scripts/readme-image.html`.
+- `scripts/readme-image.js`: makes the README image. The seeds and settings in the image are at its top.
 
 This generator was previously a Python script available at the [v1-python](https://github.com/echus/cyberpunk-wallpaper-generator/tree/v1-python) tag.

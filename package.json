@@ -1,0 +1,11 @@
+{
+  "name": "cyberpunk-wallpaper-generator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "readme-image": "node scripts/readme-image.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}
