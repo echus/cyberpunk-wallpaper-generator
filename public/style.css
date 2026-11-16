@@ -20,23 +20,69 @@ body {
   font: 14px/1.4 Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 
-/* Controls on the left, preview on the right, together in the middle of the page.
-   On a narrow screen, the preview goes below. */
-main {
-  display: grid;
-  grid-template-columns: 320px minmax(0, auto);
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
-  min-height: 100vh;
-  padding: 24px;
-}
-
+/* On a wide screen, the preview fills the window and the controls float over it.
+   On a narrow screen, the controls are at the top and the preview is below them. */
 @media (max-width: 720px) {
   main {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
+    display: grid;
+    gap: 24px;
     padding: 16px;
+  }
+}
+
+@media (min-width: 721px) {
+  body {
+    overflow: hidden;
+  }
+
+  /* The controls start at the top left. Drag the title to move them (see app.js). */
+  #controls {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 1;
+    width: 320px;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  #controls h1 {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+
+  /* A grip in the top right corner shows that the panel moves. */
+  #controls h1::after {
+    content: "⋮⋮";
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    color: var(--muted);
+    letter-spacing: -0.2em;
+  }
+
+  /* The wallpaper is as big as it can be without cutting any of it off.
+     A phone wallpaper on a desktop screen uses the full height, in the middle.
+     A faint grid of dots fills the space at the sides. */
+  .preview {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(#1c1f25 1px, transparent 1.5px) 0 0 / 24px 24px;
+  }
+
+  canvas {
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+
+  /* The border is just outside the wallpaper, so it shows only where there is space around it. */
+  .preview .frame::before {
+    inset: -1px;
   }
 }
 
@@ -65,7 +111,7 @@ form {
   --notch: 22px;
 }
 
-/* The border: a thin line with a 45 degree notch at the bottom left.
+/* The border: a plain thin line with a 45 degree notch at the bottom left.
    Each side is a 1 pixel strip of colour. The notch is a diagonal line in a small square. */
 .frame::before {
   content: "";
@@ -82,37 +128,9 @@ form {
   background-repeat: no-repeat;
 }
 
-/* A soft glow around the border and its glitches. */
-.frame::before,
-.frame::after {
+/* A soft glow around the border. */
+.frame::before {
   filter: drop-shadow(0 0 3px var(--frame));
-}
-
-/* Glitches on the border. Each part is a small block of colour.
-   Blocks in the page colour cut a gap in the line. Accent blocks put the cut piece back, moved over.
-   This box is 8 pixels bigger than the panel on each side, so the border line is 8 pixels in. */
-.frame::after {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    /* A thick tab at the top left. */
-    linear-gradient(var(--frame) 0 0) 8px 5px / 64px 3px,
-    /* A piece of the top line, moved up and to the right. */
-    linear-gradient(var(--bg) 0 0) 150px 8px / 40px 1px,
-    linear-gradient(var(--frame) 0 0) 157px 4px / 40px 1px,
-    /* A piece of the right line, moved out. */
-    linear-gradient(var(--bg) 0 0) right 8px top 36% / 1px 52px,
-    linear-gradient(var(--frame) 0 0) right 3px top 37% / 1px 52px,
-    /* A short double line on the right, lower down. */
-    linear-gradient(var(--frame) 0 0) right 3px top 62% / 3px 10px,
-    /* Small data blocks under the bottom line. */
-    linear-gradient(var(--frame) 0 0) right 20px bottom 3px / 14px 2px,
-    linear-gradient(var(--frame) 0 0) right 38px bottom 3px / 4px 2px,
-    linear-gradient(var(--frame) 0 0) right 46px bottom 3px / 2px 2px;
-  background-repeat: no-repeat;
 }
 
 label {
@@ -238,14 +256,19 @@ button:hover {
   filter: brightness(1.15);
 }
 
-.preview {
-  display: flex;
-  justify-content: center;
-  min-width: 0;
-}
+@media (max-width: 720px) {
+  .preview {
+    display: flex;
+    justify-content: center;
+  }
 
-.preview .frame {
-  padding: 14px;
+  .preview .frame {
+    padding: 14px;
+  }
+
+  canvas {
+    max-width: 100%;
+  }
 }
 
 /* The preview frame has its notch at the top left. */
@@ -260,14 +283,18 @@ button:hover {
   background-repeat: no-repeat;
 }
 
-/* The glitches on the preview frame are a mirror image of the ones on the controls. */
-.preview .frame::after {
-  transform: scaleX(-1);
+/* On a wide screen, only the side lines of the preview border can show, because the wallpaper
+   fills the full height. Both lines go from top to bottom, with no gap for the notch. */
+@media (min-width: 721px) {
+  .preview .frame::before {
+    background:
+      linear-gradient(var(--frame) 0 0) left top / 1px 100%,
+      linear-gradient(var(--frame) 0 0) right top / 1px 100%;
+    background-repeat: no-repeat;
+  }
 }
 
-/* The canvas has the full wallpaper size. CSS makes it fit the screen and the frame. */
+/* The canvas has the full wallpaper size. CSS makes it fit the screen. */
 canvas {
   display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 48px - 28px);
 }

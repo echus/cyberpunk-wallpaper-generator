@@ -64,6 +64,23 @@ document.querySelector('#download').addEventListener('click', () => {
   }, 'image/png');
 });
 
+// Drag the title to move the controls. They stay inside the window.
+// On a narrow screen the controls are part of the page and do not move.
+const handle = form.querySelector('h1');
+handle.addEventListener('pointerdown', (start) => {
+  if (getComputedStyle(form).position !== 'fixed') return;
+  const box = form.getBoundingClientRect();
+  const move = (event) => {
+    const x = box.left + event.clientX - start.clientX;
+    const y = box.top + event.clientY - start.clientY;
+    form.style.left = `${clamp(x, 0, Math.max(0, innerWidth - box.width))}px`;
+    form.style.top = `${clamp(y, 0, Math.max(0, innerHeight - box.height))}px`;
+  };
+  handle.setPointerCapture(start.pointerId);
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', () => handle.removeEventListener('pointermove', move), { once: true });
+});
+
 // ------------------------------------------------------------ drawing
 
 // Draws the wallpaper.
