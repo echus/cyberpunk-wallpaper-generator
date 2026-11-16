@@ -20,7 +20,7 @@ export const PALETTES = {
 
 // Image sizes in pixels. Phone is 19.5:9 (Galaxy S25 Ultra, iPhone Pro Max). Desktop is 4K.
 export const DEVICES = {
-  phone: [1440, 3120],
+  mobile: [1440, 3120],
   desktop: [3840, 2160],
 };
 

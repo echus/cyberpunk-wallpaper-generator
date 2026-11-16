@@ -153,12 +153,14 @@ form {
   filter: drop-shadow(0 0 3px var(--frame));
 }
 
-/* The controls have a white border with an accent glow behind it. */
-#controls {
+/* The controls and the wallpaper have a white border with an accent glow behind it. */
+#controls,
+.preview .frame {
   --frame: color-mix(in srgb, white 85%, transparent);
 }
 
-#controls::before {
+#controls::before,
+.preview .frame::before {
   filter: drop-shadow(0 0 2px var(--accent)) drop-shadow(0 0 6px var(--accent));
 }
 

@@ -169,7 +169,7 @@ function fileName() {
 }
 
 // The settings as a page address, for example:
-// ?seed=205&device=phone&colour=sodium&glitch=0.5
+// ?seed=205&device=mobile&colour=sodium&glitch=0.5
 // ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&glitch=0.5
 function address() {
   const { width, height, seed, accent, glitch } = settings();
@@ -187,9 +187,10 @@ function address() {
 function loadAddress() {
   const params = new URLSearchParams(location.search);
 
-  // Device: a tall screen gets the phone size, a wide screen gets the desktop size.
-  const device = params.get('device');
-  setDevice(DEVICES[device] ? device : screen.height > screen.width ? 'phone' : 'desktop');
+  // Device: a tall screen gets the mobile size, a wide screen gets the desktop size.
+  // Links from before the rename say 'phone' for 'mobile'.
+  const device = params.get('device') === 'phone' ? 'mobile' : params.get('device');
+  setDevice(DEVICES[device] ? device : screen.height > screen.width ? 'mobile' : 'desktop');
   if (device === 'custom') {
     form.device.value = 'custom';
     form.width.value = params.get('w') ?? form.width.value;
