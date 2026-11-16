@@ -151,12 +151,30 @@ function savePanelPosition() {
 function draw() {
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
+  showFavicon(form.accent.value);
   const { maxAccents } = renderWallpaper(canvas, settings());
   // The accents slider goes up to the number of elements in this layout that can use the accent.
   // A value above the new maximum drops to it.
   form.accents.max = maxAccents;
   showSliderValues();
   history.replaceState(null, '', address());
+}
+
+// The tab icon: the panel's notched frame on a dark square, with a block in the chosen colour.
+// It is drawn as a PNG, because some browsers do not show SVG tab icons.
+function showFavicon(colour) {
+  const faviconCanvas = document.createElement('canvas');
+  faviconCanvas.width = faviconCanvas.height = 64;
+  const ctx = faviconCanvas.getContext('2d');
+  ctx.setTransform(2, 0, 0, 2, 0, 0);  // draw on a 32 x 32 grid
+  ctx.fillStyle = '#0b0c0f';
+  ctx.fillRect(0, 0, 32, 32);
+  ctx.strokeStyle = '#c9ccd2';
+  ctx.lineWidth = 2;
+  ctx.stroke(new Path2D('M4.5 4.5h23v23h-16l-7-7z'));
+  ctx.fillStyle = colour;
+  ctx.fillRect(15, 15, 8, 8);
+  document.querySelector('#favicon').href = faviconCanvas.toDataURL('image/png');
 }
 
 // Draws after a short pause. Use this for sliders, so it does not draw on each small move.
