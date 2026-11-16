@@ -99,21 +99,50 @@ moreToggle.addEventListener('click', () => {
 
 // Drag any part of the controls that is not a field, a button or a slider setting to move them.
 // This works with a mouse or a finger. The controls stay inside the window.
+// The browser remembers where they are, so they come back to the same place after a reload.
 form.addEventListener('pointerdown', (start) => {
   // The slider settings do not drag, so a slightly missed slider move does not move the panel.
   if (start.button !== 0 || start.target.closest('input, select, button, label:has(input[type="range"])')) return;
   start.preventDefault();
   const box = form.getBoundingClientRect();
+  let moved = false;
   const move = (event) => {
-    const x = box.left + event.clientX - start.clientX;
-    const y = box.top + event.clientY - start.clientY;
-    form.style.left = `${clamp(x, 0, Math.max(0, innerWidth - box.width))}px`;
-    form.style.top = `${clamp(y, 0, Math.max(0, innerHeight - box.height))}px`;
+    moved = true;
+    placePanel(box.left + event.clientX - start.clientX, box.top + event.clientY - start.clientY);
   };
   form.setPointerCapture(start.pointerId);
   form.addEventListener('pointermove', move);
-  form.addEventListener('pointerup', () => form.removeEventListener('pointermove', move), { once: true });
+  form.addEventListener('pointerup', () => {
+    form.removeEventListener('pointermove', move);
+    if (moved) savePanelPosition();
+  }, { once: true });
 });
+
+// Put the controls back where they were. Without a saved place they stay at the top left (see style.css).
+// Saved places are only a convenience, so a browser that blocks storage just starts at the top left.
+const PANEL_KEY = 'panel-position';
+try {
+  const saved = JSON.parse(localStorage.getItem(PANEL_KEY));
+  if (Number.isFinite(saved?.left) && Number.isFinite(saved?.top)) placePanel(saved.left, saved.top);
+} catch {}
+
+// When the window gets smaller, a moved panel stays inside it.
+window.addEventListener('resize', () => {
+  if (form.style.left) placePanel(parseFloat(form.style.left), parseFloat(form.style.top));
+});
+
+// Moves the controls to a place in the window, kept fully inside it.
+function placePanel(x, y) {
+  const box = form.getBoundingClientRect();
+  form.style.left = `${clamp(x, 0, Math.max(0, innerWidth - box.width))}px`;
+  form.style.top = `${clamp(y, 0, Math.max(0, innerHeight - box.height))}px`;
+}
+
+function savePanelPosition() {
+  try {
+    localStorage.setItem(PANEL_KEY, JSON.stringify({ left: parseFloat(form.style.left), top: parseFloat(form.style.top) }));
+  } catch {}
+}
 
 // ------------------------------------------------------------ drawing
 
