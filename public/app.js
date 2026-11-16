@@ -97,12 +97,12 @@ moreToggle.addEventListener('click', () => {
   moreToggle.setAttribute('aria-expanded', open);
 });
 
-// Drag any part of the controls that is not a field, a button or a slider setting to move them.
+// Drag any part of the controls that is not a field, a button, a link or a slider setting to move them.
 // This works with a mouse or a finger. The controls stay inside the window.
 // The browser remembers where they are, so they come back to the same place after a reload.
 form.addEventListener('pointerdown', (start) => {
   // The slider settings do not drag, so a slightly missed slider move does not move the panel.
-  if (start.button !== 0 || start.target.closest('input, select, button, label:has(input[type="range"])')) return;
+  if (start.button !== 0 || start.target.closest('input, select, button, a, label:has(input[type="range"])')) return;
   start.preventDefault();
   const box = form.getBoundingClientRect();
   let moved = false;

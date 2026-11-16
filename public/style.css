@@ -110,6 +110,22 @@ h1 {
   font-weight: bold;
 }
 
+/* A small line under the title. It sits close to the title, so the two read as one. */
+.byline {
+  margin: -12px 0 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.byline a {
+  color: var(--text);
+  text-underline-offset: 2px;
+}
+
+.byline a:hover {
+  color: white;
+}
+
 form {
   display: flex;
   flex-direction: column;
@@ -477,6 +493,10 @@ button:hover {
 
   #controls h1 {
     margin-bottom: 0;
+  }
+
+  .byline {
+    margin: -8px 0 2px;
   }
 
   #download {
