@@ -1,6 +1,6 @@
 # cyberpunk-wallpaper-generator
 
-Generate minimal, glitchy cyberpunk wallpapers.
+Generate minimal glitchy cyberpunk wallpapers.
 
 ![The app on a desktop (seed 570791) and a phone (seed 532919) in rhodamine, with night, dim and day in diagonal bands](examples/preview.webp)
 
