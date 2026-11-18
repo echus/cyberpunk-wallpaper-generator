@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "readme-image": "node scripts/readme-image.js"
+    "preview-images": "node scripts/preview-images.js"
   },
   "devDependencies": {
     "playwright-core": "^1.65.1"

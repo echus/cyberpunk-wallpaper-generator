@@ -37,11 +37,10 @@ form.palette.addEventListener('change', () => {
 
 form.accent.addEventListener('input', drawSoon);
 
-// The moon, half and sun buttons pick the mode. The browser remembers it for the next visit.
+// The moon, sunset and sun buttons pick the mode.
 for (const button of document.querySelectorAll('#modes button')) {
   button.addEventListener('click', () => {
     form.mode.value = button.value;
-    saveMode();
     draw();
   });
 }
@@ -284,10 +283,8 @@ function loadAddress() {
     form.accent.value = PALETTES.rhodamine;
   }
 
-  // Mode: from the address, then the last mode in this browser, then dark.
-  // Links from before there were modes have no mode.
-  const mode = MODES[params.get('mode')] ? params.get('mode') : savedMode();
-  form.mode.value = MODES[mode] ? mode : 'dark';
+  // Mode: from the address, or dark. Links from before there were modes have no mode.
+  form.mode.value = MODES[params.get('mode')] ? params.get('mode') : 'dark';
 
   form.seed.value = params.get('seed') ?? randomSeed();
   // The slider's real maximum comes from the layout (see draw). Until then, any value is allowed.
@@ -307,20 +304,6 @@ function isOpen(select) {
   } catch {
     return false;
   }
-}
-
-// The last mode is only a convenience, so a browser that blocks storage just starts dark.
-function savedMode() {
-  try {
-    return localStorage.getItem('mode');
-  } catch {
-    return null;
-  }
-}
-function saveMode() {
-  try {
-    localStorage.setItem('mode', form.mode.value);
-  } catch {}
 }
 
 function randomSeed() {

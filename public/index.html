@@ -10,19 +10,17 @@
   <meta property="og:url" content="https://wallpaper.echus.co/">
   <meta property="og:title" content="cyberpunk wallpaper generator | echus.co">
   <meta property="og:description" content="Generate minimal, glitchy cyberpunk wallpapers.">
-  <meta property="og:image" content="https://wallpaper.echus.co/preview.jpg">
-  <meta property="og:image:width" content="800">
-  <meta property="og:image:height" content="600">
-  <meta property="og:image:alt" content="The wallpaper generator: a control panel over an orange cyberpunk wallpaper">
+  <meta property="og:image" content="https://wallpaper.echus.co/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The wallpaper generator: a control panel over a pink cyberpunk wallpaper, shown in night, dim and day modes">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="style.css">
-  <!-- Sets the mode before the page shows, so a light page does not show dark first.
-       The mode comes from the address, then the last mode in this browser. app.js keeps it up to date. -->
+  <!-- Sets the mode from the address before the page shows, so a light page does not show dark first.
+       Without a mode in the address the page is dark. app.js keeps it up to date. -->
   <script>
-    try {
-      const mode = new URLSearchParams(location.search).get('mode') ?? localStorage.getItem('mode');
-      document.documentElement.dataset.mode = ['dim', 'light'].includes(mode) ? mode : 'dark';
-    } catch {}
+    const mode = new URLSearchParams(location.search).get('mode');
+    document.documentElement.dataset.mode = ['dim', 'light'].includes(mode) ? mode : 'dark';
   </script>
   <!-- app.js draws the tab icon in the chosen colour. -->
   <link rel="icon" id="favicon">

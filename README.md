@@ -22,13 +22,13 @@ Deploy via Cloudflare with:
 npx wrangler deploy
 ```
 
-## README image
+## Preview images
 
-After a change to the interface, remake `examples/preview.webp` with:
+After a change to the interface, remake the README image `examples/preview.webp` and the link preview card `public/share.jpg` with:
 
 ```bash
 npm install
-npm run readme-image
+npm run preview-images
 ```
 
 The script uses the installed Chrome. Set `CHROME` to a browser's path to use another one.
@@ -39,7 +39,7 @@ The script uses the installed Chrome. Set `CHROME` to a browser's path to use an
 - `public/effects.js`: glitches, vignette and grain.
 - `public/random.js`: seeded random numbers.
 - `public/app.js`: connects the page controls to the generator.
-- `scripts/readme-image.js`: makes the README image. The seeds and settings in the image are at its top.
+- `scripts/preview-images.js`: makes the README image and the link preview card. The seeds, settings and band cuts are at its top.
 
 The mode icons are based on [Pixelarticons](https://github.com/halfmage/pixelarticons) by Gerrit Halfmann, under the MIT license.
 
