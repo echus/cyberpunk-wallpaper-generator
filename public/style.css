@@ -317,7 +317,7 @@ label > :not(.name) {
 /* A setting glows when the mouse is over it: the name turns bright and the fields get an accent glow. */
 label,
 label :is(.name, .slider, input, select, button) {
-  transition: color 0.15s, text-shadow 0.15s, border-color 0.15s, box-shadow 0.15s;
+  transition: color 0.15s, background-color 0.15s, text-shadow 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 /* The whole row glows, so the joined boxes do not each glow over their neighbours. */
@@ -531,8 +531,11 @@ input[type="range"]::-moz-range-thumb {
   border-color: var(--accent);
 }
 
+/* On hover it fills with the accent colour. The row already glows, so the button does not glow too.
+   app.js sets --on-accent to black or white, whichever reads better on the accent. */
 #new-seed:hover {
-  box-shadow: 0 0 6px var(--accent);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 /* A list with a field joined below it. The field shows only for the 'custom' choice.

@@ -159,6 +159,7 @@ function savePanelPosition() {
 function draw() {
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
+  document.documentElement.style.setProperty('--on-accent', textOn(form.accent.value));
   document.documentElement.dataset.mode = form.mode.value;
   for (const button of document.querySelectorAll('#modes button')) {
     button.setAttribute('aria-checked', button.value === form.mode.value);
@@ -304,6 +305,16 @@ function isOpen(select) {
   } catch {
     return false;
   }
+}
+
+// Black or white, whichever has more contrast with a hex colour (WCAG relative luminance).
+function textOn(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (luminance + 0.05) / 0.05 > 1.05 / (luminance + 0.05) ? '#000' : '#fff';
 }
 
 function randomSeed() {
