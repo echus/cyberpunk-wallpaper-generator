@@ -187,7 +187,7 @@ h1 {
   filter: drop-shadow(0 0 3px var(--accent));
 }
 
-/* Like download, it turns bright and glows in the accent colour on hover. */
+/* It turns bright and glows in the accent colour on hover. */
 #modes button:hover {
   color: var(--strong);
   filter: drop-shadow(0 0 3px var(--accent));
@@ -595,9 +595,13 @@ button:hover {
   height: 14px;
 }
 
-/* It glows in the accent colour on hover. */
+/* It turns the accent colour on hover. */
+#download {
+  transition: color 0.15s;
+}
+
 #download:hover {
-  filter: drop-shadow(0 0 3px var(--accent));
+  color: var(--accent);
 }
 
 /* On a wide screen, the extra settings are part of the panel like the others, and the button that folds them is hidden. */
