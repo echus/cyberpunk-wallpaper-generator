@@ -1,12 +1,13 @@
-// Makes examples/preview.jpg, the picture of the app in the README:
+// Makes examples/preview.webp, the picture of the app in the README:
 // the app in a desktop window and on a phone, side by side.
 // Run it with `npm run readme-image`. It uses the installed Chrome, or the browser at CHROME.
 
 import { chromium } from 'playwright-core';
 import { fileURLToPath } from 'node:url';
+import { writeFileSync } from 'node:fs';
 
 const PUBLIC = new URL('../public/', import.meta.url);
-const OUT = fileURLToPath(new URL('../examples/preview.jpg', import.meta.url));
+const OUT = fileURLToPath(new URL('../examples/preview.webp', import.meta.url));
 
 // The page loads from this address, and every request to it is answered with a file from public/.
 const ORIGIN = 'http://wallpaper.test';
@@ -53,18 +54,31 @@ async function shoot({ window, query }) {
 const views = [];
 for (const shot of SHOTS) views.push(await shoot(shot));
 
-// The views go side by side on a dark background, each with a thin rounded border.
+// The views go side by side with rounded corners. Everything around them is see-through.
 const page = await browser.newPage({ viewport: { width: 1600, height: 800 }, deviceScaleFactor: 2 });
 await page.setContent(`
   <style>
-    body { margin: 0; background: #16181d; }
-    .row { display: inline-flex; gap: 28px; padding: 36px; background: #16181d; }
-    img { display: block; height: ${HEIGHT}px; border: 1px solid #2a2e36; border-radius: 10px; }
+    body { margin: 0; }
+    .row { display: inline-flex; gap: 28px; }
+    img { display: block; height: ${HEIGHT}px; border-radius: 10px; }
   </style>
   <div class="row">
     ${views.map(({ width, src }) => `<img width="${width}" src="${src}">`).join('')}
   </div>
 `);
-await page.locator('.row').screenshot({ path: OUT, type: 'jpeg', quality: 88 });
+const png = await page.locator('.row').screenshot({ omitBackground: true });
+
+// WebP keeps the see-through parts like PNG, but at a tenth of the size, because the grain is lossy.
+const webp = await page.evaluate(async (src) => {
+  const image = new Image();
+  image.src = src;
+  await image.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  canvas.getContext('2d').drawImage(image, 0, 0);
+  return canvas.toDataURL('image/webp', 0.88);
+}, `data:image/png;base64,${png.toString('base64')}`);
+writeFileSync(OUT, Buffer.from(webp.split(',')[1], 'base64'));
 await browser.close();
-console.log('Wrote examples/preview.jpg');
+console.log('Wrote examples/preview.webp');

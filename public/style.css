@@ -20,16 +20,16 @@
    The controls have more of their own background, because the wallpaper behind them is mid grey. */
 :root[data-mode="light"] {
   --bg: #d3d5d9;
-  --panel: #bec0c4;
-  --line: #9da0a6;
+  --panel: #cdcfd3;
+  --line: #a5a8ae;
   --text: #33383f;
   --muted: #555a63;
   --strong: #0d0f12;
   --track: #7f838a;
   --edge: color-mix(in srgb, black 18%, transparent);
   --panel-alpha: 65%;
-  --surround: #74787f;
-  --dots: radial-gradient(#868a91 1px, transparent 1.5px) 0 0 / 24px 24px;
+  --surround: #a5a9af;
+  --dots: radial-gradient(#b4b8be 1px, transparent 1.5px) 0 0 / 24px 24px;
   color-scheme: light;
 }
 

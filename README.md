@@ -2,7 +2,7 @@
 
 Generate minimal, glitchy cyberpunk wallpapers.
 
-![The app on a desktop (seed 570791) and on a phone in light mode (seed 532919), both in sodium](examples/preview.jpg)
+![The app on a desktop (seed 570791) and on a phone in light mode (seed 532919), both in sodium](examples/preview.webp)
 
 ## Run locally
 
@@ -24,7 +24,7 @@ npx wrangler deploy
 
 ## README image
 
-After a change to the interface, remake `examples/preview.jpg` with:
+After a change to the interface, remake `examples/preview.webp` with:
 
 ```bash
 npm install
