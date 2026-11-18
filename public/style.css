@@ -4,12 +4,33 @@
   --line: #2a2e36;
   --text: #b9bec8;
   --muted: #6b717c;
+  --strong: white;  /* titles, chosen values and text under the mouse */
+  --track: white;   /* the slider track after the handle */
+  --edge: color-mix(in srgb, white 15%, transparent);  /* the border of the controls */
+  --panel-alpha: 30%;  /* how much of the page background the controls have */
   /* The space around the wallpaper: a slightly lighter grey with a faint grid of dots,
      so the wallpaper's own darker edges stand out from it. */
   --surround: #121418;
   --dots: radial-gradient(#22262d 1px, transparent 1.5px) 0 0 / 24px 24px;
   /* --accent comes from app.js: the colour chosen in the panel. */
   color-scheme: dark;
+}
+
+/* Light mode: the same page in light greys. app.js sets data-mode with the sun and moon button.
+   The controls have more of their own background, because the wallpaper behind them is mid grey. */
+:root[data-mode="light"] {
+  --bg: #d3d5d9;
+  --panel: #bec0c4;
+  --line: #9da0a6;
+  --text: #33383f;
+  --muted: #555a63;
+  --strong: #0d0f12;
+  --track: #7f838a;
+  --edge: color-mix(in srgb, black 18%, transparent);
+  --panel-alpha: 65%;
+  --surround: #74787f;
+  --dots: radial-gradient(#868a91 1px, transparent 1.5px) 0 0 / 24px 24px;
+  color-scheme: light;
 }
 
 * {
@@ -34,13 +55,18 @@ body {
   left: 24px;
   z-index: 1;
   width: 320px;
-  background: color-mix(in srgb, var(--bg) 30%, transparent);
-  backdrop-filter: blur(6px);
 }
 
-/* Over a light wallpaper the panel needs more of its own dark background, or its text is lost. */
-[data-mode="light"] #controls {
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
+/* The see-through background of the controls, cut to the shape of the border's notch.
+   It is a layer under the border, so the cut does not also cut off the border's glow. */
+#controls::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: color-mix(in srgb, var(--bg) var(--panel-alpha), transparent);
+  backdrop-filter: blur(6px);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--notch) 100%, 0 calc(100% - var(--notch)));
 }
 
 @media (max-width: 720px) {
@@ -108,8 +134,47 @@ h1 {
 }
 
 #controls h1 {
-  color: white;
+  margin: 0;
+  color: var(--strong);
   font-weight: bold;
+}
+
+/* The title with the mode button at the right. The button keeps clear of the grip in the corner. */
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+#mode-toggle {
+  display: flex;
+  margin: -4px 12px -4px 0;
+  padding: 4px;
+  border: 0;
+  color: var(--muted);
+  background: none;
+}
+
+#mode-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Like download, it turns bright and glows in the accent colour on hover. */
+#mode-toggle:hover {
+  color: var(--strong);
+  filter: drop-shadow(0 0 3px var(--accent));
+}
+
+[data-mode="light"] #mode-toggle .sun,
+:root:not([data-mode="light"]) #mode-toggle .moon {
+  display: none;
 }
 
 /* A small line just under the title, so the two read as one. */
@@ -134,7 +199,7 @@ h1 {
 }
 
 .byline a:hover {
-  color: white;
+  color: var(--strong);
 }
 
 form {
@@ -175,10 +240,10 @@ form {
   filter: drop-shadow(0 0 3px var(--frame));
 }
 
-/* The controls have a mostly see-through white border, so it looks grey,
+/* The controls have a mostly see-through border, so it looks grey,
    with an accent glow behind it. */
 #controls {
-  --frame: color-mix(in srgb, white 15%, transparent);
+  --frame: var(--edge);
 }
 
 #controls::before {
@@ -233,7 +298,7 @@ label > :not(.name) {
   text-align: right;
 }
 
-/* A setting glows when the mouse is over it: the name turns white and the fields get an accent glow. */
+/* A setting glows when the mouse is over it: the name turns bright and the fields get an accent glow. */
 label,
 label :is(.name, .slider, input, select, button) {
   transition: color 0.15s, text-shadow 0.15s, border-color 0.15s, box-shadow 0.15s;
@@ -241,7 +306,7 @@ label :is(.name, .slider, input, select, button) {
 
 /* The whole row glows, so the joined boxes do not each glow over their neighbours. */
 label:hover {
-  color: white;
+  color: var(--strong);
   text-shadow: 0 0 6px var(--accent);
   box-shadow: 0 0 6px var(--accent);
 }
@@ -292,7 +357,7 @@ input[type="color"] {
   padding: 2px;
 }
 
-/* The slider track is accent up to the handle and white after it.
+/* The slider track is accent up to the handle and --track after it.
    app.js sets --fill to the handle position. */
 input[type="range"] {
   appearance: none;
@@ -306,13 +371,13 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), white 0);
+  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), var(--track) 0);
 }
 
 input[type="range"]::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), white 0);
+  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), var(--track) 0);
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -380,19 +445,19 @@ input[type="range"]::-moz-range-thumb {
     padding: 6px 8px;
   }
 
-  /* The chosen option is white. The option under the mouse is white on a faint accent. */
+  /* The chosen option is bright. The option under the mouse is bright on a faint accent. */
   option::checkmark {
     display: none;
   }
 
   option:checked {
-    color: white;
+    color: var(--strong);
   }
 
   option:hover,
   option:focus-visible {
     outline: none;
-    color: white;
+    color: var(--strong);
     background: color-mix(in srgb, var(--accent) 25%, transparent);
   }
 
@@ -425,11 +490,6 @@ input[type="range"]::-moz-range-thumb {
   background: var(--swatch, conic-gradient(red, yellow, lime, cyan, blue, magenta, red));
 }
 
-/* A mode swatch has an edge, so the dark one shows on the dark panel. */
-.swatch.outlined {
-  box-shadow: inset 0 0 0 1px var(--muted);
-}
-
 /* A text box with a button joined to its right side. */
 .joined {
   display: flex;
@@ -447,11 +507,11 @@ input[type="range"]::-moz-range-thumb {
   letter-spacing: normal;
 }
 
-/* Generate is the main action, so it has an accent border and white text.
+/* Generate is the main action, so it has an accent border and bright text.
    It comes to the front, so its whole border shows over the text box. */
 #new-seed {
   position: relative;
-  color: white;
+  color: var(--strong);
   border-color: var(--accent);
 }
 
@@ -496,7 +556,7 @@ button:hover {
   border-color: var(--accent);
 }
 
-/* Download looks like a link: bold white text with an arrow on its left.
+/* Download looks like a link: bold bright text with an arrow on its left.
    It sits at the right, with a little more space above it than between the settings. */
 #download {
   display: flex;
@@ -506,7 +566,7 @@ button:hover {
   margin-top: 8px;
   padding: 0;
   border: 0;
-  color: white;
+  color: var(--strong);
   background: none;
   font-weight: bold;
 }
@@ -537,7 +597,7 @@ button:hover {
     padding: 14px;
   }
 
-  #controls h1 {
+  .title {
     margin-bottom: 0;
   }
 
@@ -564,7 +624,7 @@ button:hover {
   }
 
   #more-toggle:hover {
-    color: white;
+    color: var(--strong);
   }
 
   #more-toggle::before {

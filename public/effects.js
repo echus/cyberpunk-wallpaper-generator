@@ -6,7 +6,8 @@ import { Random } from './random.js';
 // Digital damage. Most of it goes to rows with marks on them, and to the large shapes.
 // amount: 0 is none, 1 is heavy. big: boxes of the large shapes on the screen.
 // scale: the size of the picture, 1 on a 1290 px wide phone. Sizes below are in pixels at scale 1.
-export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1 }) {
+// dataColor: the grey of the broken data blocks.
+export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, dataColor = [70, 76, 86] }) {
   const { data, width: w, height: h } = image;
   const rng = new Random((seed ^ 0x9e3779b9) >>> 0);
   const px = (v) => Math.max(1, Math.round(v * scale));
@@ -151,7 +152,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1 }
     const blockWidth = size(20, 119);
     const x0 = rng.int(0, w - blockWidth - 1);
     const cell = px(rng.pick([2, 3, 4]));
-    const color = rng.random() < 0.3 ? accent.map((v) => v * 0.8) : [70, 76, 86];
+    const color = rng.random() < 0.3 ? accent.map((v) => v * 0.8) : dataColor;
     for (let cy = 0; cy < blockHeight; cy += cell) {
       for (let cx = 0; cx < blockWidth; cx += cell) {
         if (rng.random() >= 0.45) continue;

@@ -34,19 +34,21 @@ export const MODES = {
     line: '#4a505b',             // normal lines
     text: '#565c66',             // text
     solids: ['#131519', '#191b20', '#202329'],  // solid blocks
+    data: [70, 76, 86],  // glitch blocks of broken data
     glow: [0.6, 0.35],  // strength of the tight glow and the wide glow on the accent
     vignette: 0.3,      // how much darker the corners are
   },
+  // Light marks on a mid grey, like the dark mode but lifted.
   light: {
-    bg: ['#a9acb1', '#a3a6ab'],
-    faint: '#9da0a5',
-    dim: '#878a90',
-    line: '#5d6168',
-    text: '#52565d',
-    solids: ['#9fa2a7', '#989ba1', '#8f9298'],
-    // A glow adds light, so on a light background it washes the accent out. Dark corners look dirty there.
-    glow: [0.3, 0.2],
-    vignette: 0.1,
+    bg: ['#6b6f76', '#666a71'],
+    faint: '#777b82',
+    dim: '#8a8e95',
+    line: '#adb1b8',
+    text: '#b8bcc2',
+    solids: ['#72767d', '#797d84', '#81858c'],
+    data: [150, 154, 162],
+    glow: [0.45, 0.3],
+    vignette: 0.15,
   },
 };
 
@@ -1148,6 +1150,7 @@ class Wallpaper {
         seed: this.seed,
         scale: this.k,
         accent: hexToRgb(this.accent),
+        dataColor: this.tone.data,
         quietTop: this.quietTop,
         big: this.big,
       });

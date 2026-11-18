@@ -16,16 +16,6 @@ for (const name of [...Object.keys(PALETTES), 'custom']) {
   form.palette.add(option);
 }
 
-// The same for the modes. The swatch shows the background of the mode.
-for (const name of Object.keys(MODES)) {
-  const option = new Option('', name);
-  const swatch = document.createElement('span');
-  swatch.className = 'swatch outlined';
-  swatch.style.setProperty('--swatch', MODES[name].bg[0]);
-  option.append(swatch, name);
-  form.mode.add(option);
-}
-
 // Start values come from the address. Values that are not in the address use the defaults.
 loadAddress();
 draw();
@@ -47,7 +37,12 @@ form.palette.addEventListener('change', () => {
 
 form.accent.addEventListener('input', drawSoon);
 
-form.mode.addEventListener('change', draw);
+// The sun and moon button switches the mode. The browser remembers it for the next visit.
+document.querySelector('#mode-toggle').addEventListener('click', () => {
+  form.mode.value = form.mode.value === 'light' ? 'dark' : 'light';
+  saveMode();
+  draw();
+});
 
 form.accents.addEventListener('input', () => {
   showSliderValues();
@@ -101,7 +96,7 @@ for (const select of form.querySelectorAll('select')) {
   });
 }
 
-// On a narrow screen, size, mode, accents and glitch are folded into one section (see style.css).
+// On a narrow screen, size, accents and glitch are folded into one section (see style.css).
 // The 'more settings' button opens and folds it. On a wide screen the button is hidden.
 const moreToggle = document.querySelector('#more-toggle');
 moreToggle.addEventListener('click', () => {
@@ -164,6 +159,9 @@ function draw() {
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
   document.documentElement.dataset.mode = form.mode.value;
+  const toggleLabel = form.mode.value === 'light' ? 'dark mode' : 'light mode';
+  document.querySelector('#mode-toggle').setAttribute('aria-label', toggleLabel);
+  document.querySelector('#mode-toggle').title = toggleLabel;
   showFavicon(form.accent.value);
   const { maxAccents } = renderWallpaper(canvas, settings());
   // The accents slider goes up to the number of elements in this layout that can use the accent.
@@ -284,8 +282,10 @@ function loadAddress() {
     form.accent.value = PALETTES.sodium;
   }
 
-  // Mode: links from before there were modes are dark.
-  form.mode.value = MODES[params.get('mode')] ? params.get('mode') : 'dark';
+  // Mode: from the address, then the last mode in this browser, then dark.
+  // Links from before there were modes have no mode.
+  const mode = MODES[params.get('mode')] ? params.get('mode') : savedMode();
+  form.mode.value = MODES[mode] ? mode : 'dark';
 
   form.seed.value = params.get('seed') ?? randomSeed();
   // The slider's real maximum comes from the layout (see draw). Until then, any value is allowed.
@@ -305,6 +305,20 @@ function isOpen(select) {
   } catch {
     return false;
   }
+}
+
+// The last mode is only a convenience, so a browser that blocks storage just starts dark.
+function savedMode() {
+  try {
+    return localStorage.getItem('mode');
+  } catch {
+    return null;
+  }
+}
+function saveMode() {
+  try {
+    localStorage.setItem('mode', form.mode.value);
+  } catch {}
 }
 
 function randomSeed() {
