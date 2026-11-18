@@ -91,6 +91,7 @@ class Wallpaper {
     this.S0 = Math.min(width, height);
     this.cw = this.S0 * 0.137;  // grid column, and the base size of shapes
     const k = this.S0 / 1290;   // detail scale (1 on a 1290 px wide phone)
+    this.k = k;
     this.u = 8 * k;             // small unit for gaps, ticks and details
     this.fontSize = 10 * k;
     this.boldSize = 11 * k;
@@ -124,6 +125,12 @@ class Wallpaper {
     return accent ? this.actx : this.ctx;
   }
 
+  // Line widths are given as on a 1290 px wide phone, and grow with the picture. They stay at
+  // least 1 pixel wide, so thin lines stay sharp on a small picture.
+  stroke(width) {
+    return Math.max(1, width * this.k);
+  }
+
   // Fills and/or outlines a polygon. A solid grey shape also hides the accent under it.
   poly(pts, { fill, outline, width = 1, accent = false } = {}) {
     const ctx = this.layer(accent);
@@ -135,7 +142,7 @@ class Wallpaper {
     }
     if (outline) {
       ctx.strokeStyle = outline;
-      ctx.lineWidth = width;
+      ctx.lineWidth = this.stroke(width);
       ctx.stroke();
     }
   }
@@ -155,7 +162,7 @@ class Wallpaper {
     const ctx = this.layer(accent);
     trace(ctx, pts, false);
     ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.lineWidth = this.stroke(width);
     ctx.lineJoin = 'round';
     ctx.stroke();
   }
@@ -166,7 +173,7 @@ class Wallpaper {
     ctx.beginPath();
     ctx.arc(cx, cy, r, rad(from), rad(to));
     ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.lineWidth = this.stroke(width);
     ctx.stroke();
   }
 
@@ -187,7 +194,7 @@ class Wallpaper {
     ctx.fillStyle = BG;
     ctx.fill();
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = this.stroke(1);
     ctx.stroke();
   }
 
@@ -210,7 +217,7 @@ class Wallpaper {
       }
     }
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = this.stroke(1);
     ctx.stroke();
     ctx.restore();
   }
@@ -869,7 +876,7 @@ class Wallpaper {
     const bandStart = mid + rng.uniform(-span * 0.8, span * 0.2);
     const bandEnd = bandStart + rng.uniform(15, 35);
     const bandWidth = u * 1.6;
-    this.arc(cx, cy, R * 0.9 - bandWidth / 2, bandStart, bandEnd, SOLIDS[2], { width: bandWidth });
+    this.arc(cx, cy, R * 0.9 - bandWidth / 2, bandStart, bandEnd, SOLIDS[2], { width: bandWidth / this.k });
     for (let deg = a0; deg <= a1; deg += 3) {
       const major = deg % 15 === 0;
       this.line([polar(cx, cy, R, rad(deg)), polar(cx, cy, R + u * (major ? 1 : 0.5), rad(deg))], major ? LINE : DIM);
@@ -1120,6 +1127,7 @@ class Wallpaper {
       glitch(image, {
         amount: this.glitchAmount,
         seed: this.seed,
+        scale: this.k,
         accent: hexToRgb(this.accent),
         quietTop: this.quietTop,
         big: this.big,

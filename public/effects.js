@@ -5,9 +5,13 @@ import { Random } from './random.js';
 
 // Digital damage. Most of it goes to rows with marks on them, and to the large shapes.
 // amount: 0 is none, 1 is heavy. big: boxes of the large shapes on the screen.
-export function glitch(image, { amount, seed, accent, quietTop, big }) {
+// scale: the size of the picture, 1 on a 1290 px wide phone. Sizes below are in pixels at scale 1.
+export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1 }) {
   const { data, width: w, height: h } = image;
   const rng = new Random((seed ^ 0x9e3779b9) >>> 0);
+  const px = (v) => Math.max(1, Math.round(v * scale));
+  // A whole number of pixels from a to b, at scale 1.
+  const size = (a, b) => rng.int(px(a), px(b));
 
   // The background colour of each row.
   const rowBg = [];
@@ -24,7 +28,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
     }
     activity[y] = sum / w;
   }
-  activity = smooth(activity, 25);
+  activity = smooth(activity, px(25));
 
   // Keep the top quiet: the clock on a phone, the menu bar on a desktop.
   for (let y = 0; y < Math.floor(h * quietTop); y++) activity[y] *= 0.05;
@@ -58,7 +62,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
 
   // A band of rows, from minHeight to maxHeight high, around a picked row.
   const band = (minHeight, maxHeight) => {
-    const bandHeight = rng.int(minHeight, maxHeight);
+    const bandHeight = size(minHeight, maxHeight);
     const y0 = clamp(pickRow() - Math.floor(bandHeight / 2), 0, h - bandHeight);
     return [y0, y0 + bandHeight];
   };
@@ -71,9 +75,9 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
   const slices = Math.max(1, count(3));
   for (let n = 0; n < slices; n++) {
     const [y0, y1] = rng.random() < 0.25 ? band(30, 110) : band(1, 28);
-    shiftRows(data, w, y0, y1, sign() * rng.int(6, 29 + Math.floor(140 * amount)));
+    shiftRows(data, w, y0, y1, sign() * size(6, 29 + Math.floor(140 * amount)));
     if (rng.random() < 0.45) {
-      const k = rng.int(2, 3 + Math.floor(10 * amount));
+      const k = size(2, 3 + Math.floor(10 * amount));
       shiftRows(data, w, y0, y1, k, [0]);
       shiftRows(data, w, y0, y1, -k, [2]);
     }
@@ -85,7 +89,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
     const [y0, y1] = band(20, 240);
     const blockWidth = Math.floor(w * rng.uniform(0.15, 0.7));
     const x0 = rng.int(0, w - blockWidth - 1);
-    const dx = sign() * rng.int(8, 19 + Math.floor(80 * amount));
+    const dx = sign() * size(8, 19 + Math.floor(80 * amount));
     moveBlock(data, w, x0, y0, blockWidth, y1 - y0, dx);
     if (rng.random() < 0.5) {
       for (let x = Math.max(0, x0 + dx); x < Math.min(w, x0 + dx + blockWidth); x++) {
@@ -103,12 +107,12 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
     const y1 = Math.floor(bottom);
     const shears = rng.int(2, 4);
     for (let n = 0; n < shears; n++) {
-      const sliceHeight = rng.int(6, 120);
+      const sliceHeight = size(6, 120);
       const sy = rng.int(y0, Math.max(y0 + 1, y1 - sliceHeight) - 1);
       const ey = Math.min(h, sy + sliceHeight);
-      shiftRows(data, w, sy, ey, sign() * rng.int(15, 24 + Math.floor(160 * Math.min(amount, 1.5))));
+      shiftRows(data, w, sy, ey, sign() * size(15, 24 + Math.floor(160 * Math.min(amount, 1.5))));
       if (rng.random() < 0.6) {
-        const k = rng.int(3, 9);
+        const k = size(3, 9);
         shiftRows(data, w, sy, ey, k, [0]);
         shiftRows(data, w, sy, ey, -k, [2]);
       }
@@ -143,10 +147,10 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
   const dataBlocks = count(1.5);
   for (let n = 0; n < dataBlocks; n++) {
     const [y0] = band(1, 1);
-    const blockHeight = rng.int(3, 9);
-    const blockWidth = rng.int(20, 119);
+    const blockHeight = size(3, 9);
+    const blockWidth = size(20, 119);
     const x0 = rng.int(0, w - blockWidth - 1);
-    const cell = rng.pick([2, 3, 4]);
+    const cell = px(rng.pick([2, 3, 4]));
     const color = rng.random() < 0.3 ? accent.map((v) => v * 0.8) : [70, 76, 86];
     for (let cy = 0; cy < blockHeight; cy += cell) {
       for (let cx = 0; cx < blockWidth; cx += cell) {
@@ -163,8 +167,8 @@ export function glitch(image, { amount, seed, accent, quietTop, big }) {
     }
   }
 
-  // 6. Red moves 1 pixel to the right on the whole picture: a soft red/cyan edge on thin lines.
-  if (amount > 0.25) shiftRows(data, w, 0, h, 1, [0]);
+  // 6. Red moves 1 pixel (at scale 1) to the right on the whole picture: a soft red/cyan edge on thin lines.
+  if (amount > 0.25) shiftRows(data, w, 0, h, px(1), [0]);
 }
 
 // Makes the edges a little darker and adds fine grain.
