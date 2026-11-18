@@ -171,15 +171,15 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1 }
   if (amount > 0.25) shiftRows(data, w, 0, h, px(1), [0]);
 }
 
-// Makes the edges a little darker and adds fine grain.
-export function finish(image, seed) {
+// Makes the edges a little darker and adds fine grain. vignette: how much darker the corners are.
+export function finish(image, seed, vignette = 0.3) {
   const { data, width: w, height: h } = image;
   const rng = new Random(seed + 1);
   for (let y = 0; y < h; y++) {
     const ny = (y / (h - 1)) * 2 - 1;  // -1 at the top, 1 at the bottom
     for (let x = 0; x < w; x++) {
       const nx = (x / (w - 1)) * 2 - 1;  // -1 at the left, 1 at the right
-      const dark = 1 - 0.3 * Math.min(1, nx * nx * 0.8 + ny * ny * 0.6);
+      const dark = 1 - vignette * Math.min(1, nx * nx * 0.8 + ny * ny * 0.6);
       // The sum of three random numbers is near a bell curve. That looks like film grain.
       const grain = (rng.random() + rng.random() + rng.random() - 1.5) * 5.6;
       const i = (y * w + x) * 4;

@@ -1,6 +1,6 @@
 // Connects the controls on the page to the wallpaper generator.
 
-import { PALETTES, DEVICES, renderWallpaper } from './wallpaper.js';
+import { PALETTES, MODES, DEVICES, renderWallpaper } from './wallpaper.js';
 
 const form = document.querySelector('#controls');
 const canvas = document.querySelector('#wallpaper');
@@ -14,6 +14,16 @@ for (const name of [...Object.keys(PALETTES), 'custom']) {
   if (PALETTES[name]) swatch.style.setProperty('--swatch', PALETTES[name]);
   option.append(swatch, name);
   form.palette.add(option);
+}
+
+// The same for the modes. The swatch shows the background of the mode.
+for (const name of Object.keys(MODES)) {
+  const option = new Option('', name);
+  const swatch = document.createElement('span');
+  swatch.className = 'swatch outlined';
+  swatch.style.setProperty('--swatch', MODES[name].bg[0]);
+  option.append(swatch, name);
+  form.mode.add(option);
 }
 
 // Start values come from the address. Values that are not in the address use the defaults.
@@ -36,6 +46,8 @@ form.palette.addEventListener('change', () => {
 });
 
 form.accent.addEventListener('input', drawSoon);
+
+form.mode.addEventListener('change', draw);
 
 form.accents.addEventListener('input', () => {
   showSliderValues();
@@ -89,7 +101,7 @@ for (const select of form.querySelectorAll('select')) {
   });
 }
 
-// On a narrow screen, device, accents and glitch are folded into one section (see style.css).
+// On a narrow screen, size, mode, accents and glitch are folded into one section (see style.css).
 // The 'more settings' button opens and folds it. On a wide screen the button is hidden.
 const moreToggle = document.querySelector('#more-toggle');
 moreToggle.addEventListener('click', () => {
@@ -151,6 +163,7 @@ function savePanelPosition() {
 function draw() {
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
+  document.documentElement.dataset.mode = form.mode.value;
   showFavicon(form.accent.value);
   const { maxAccents } = renderWallpaper(canvas, settings());
   // The accents slider goes up to the number of elements in this layout that can use the accent.
@@ -195,6 +208,7 @@ function settings() {
     accent: form.accent.value,
     accents: clamp(Math.round(form.accents.value), 0, 99),
     glitch: clamp(Number(form.glitch.value), 0, 1),
+    mode: form.mode.value,
   };
 }
 
@@ -227,16 +241,17 @@ function fileName() {
 }
 
 // The settings as a page address, for example:
-// ?seed=205&device=mobile&colour=sodium&accents=1&glitch=0.5
-// ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&accents=3&glitch=0.5
+// ?seed=205&device=mobile&colour=sodium&mode=dark&accents=1&glitch=0.5
+// ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&mode=light&accents=3&glitch=0.5
 function address() {
-  const { width, height, seed, accent, accents, glitch } = settings();
+  const { width, height, seed, accent, accents, glitch, mode } = settings();
   const params = new URLSearchParams({ seed, device: form.device.value });
   if (form.device.value === 'custom') {
     params.set('w', width);
     params.set('h', height);
   }
   params.set('colour', form.palette.value === 'custom' ? accent.slice(1) : form.palette.value);
+  params.set('mode', mode);
   params.set('accents', accents);
   params.set('glitch', glitch);
   return `?${params}`;
@@ -268,6 +283,9 @@ function loadAddress() {
     form.palette.value = 'sodium';
     form.accent.value = PALETTES.sodium;
   }
+
+  // Mode: links from before there were modes are dark.
+  form.mode.value = MODES[params.get('mode')] ? params.get('mode') : 'dark';
 
   form.seed.value = params.get('seed') ?? randomSeed();
   // The slider's real maximum comes from the layout (see draw). Until then, any value is allowed.

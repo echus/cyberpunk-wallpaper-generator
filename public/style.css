@@ -38,6 +38,11 @@ body {
   backdrop-filter: blur(6px);
 }
 
+/* Over a light wallpaper the panel needs more of its own dark background, or its text is lost. */
+[data-mode="light"] #controls {
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+}
+
 @media (max-width: 720px) {
   #controls {
     top: 12px;
@@ -418,6 +423,11 @@ input[type="range"]::-moz-range-thumb {
   margin: 0 2px;
   transform: skewX(-20deg);
   background: var(--swatch, conic-gradient(red, yellow, lime, cyan, blue, magenta, red));
+}
+
+/* A mode swatch has an edge, so the dark one shows on the dark panel. */
+.swatch.outlined {
+  box-shadow: inset 0 0 0 1px var(--muted);
 }
 
 /* A text box with a button joined to its right side. */

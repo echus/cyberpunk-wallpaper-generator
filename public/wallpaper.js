@@ -3,7 +3,7 @@
 // The wallpaper is a few groups of marks on a loose grid, with a lot of empty space.
 // Shapes of one type have the same size. They tile or mirror each other.
 // Large shapes only show at a screen edge, where the edge cuts them off.
-// Most of the picture is near-black and grey. The accent colour shows on one small bright block
+// Most of the picture is greys on a near-black or light grey background. The accent colour shows on one small bright block
 // (the spark) and on a set number of other elements.
 
 import { Random } from './random.js';
@@ -25,13 +25,30 @@ export const DEVICES = {
   desktop: [3840, 2160],
 };
 
-// Greys, from dark to light.
-const BG = '#08090b';     // background
-const FAINT = '#15171b';  // guide lines
-const DIM = '#282c33';    // quiet lines
-const LINE = '#4a505b';   // normal lines
-const TEXT = '#565c66';   // text
-const SOLIDS = ['#131519', '#191b20', '#202329'];  // solid blocks
+// The greys of each mode. Marks step away from the background: faint, then dim, then lines and text.
+export const MODES = {
+  dark: {
+    bg: ['#08090b', '#0d0e10'],  // background, top to bottom
+    faint: '#15171b',            // guide lines
+    dim: '#282c33',              // quiet lines
+    line: '#4a505b',             // normal lines
+    text: '#565c66',             // text
+    solids: ['#131519', '#191b20', '#202329'],  // solid blocks
+    glow: [0.6, 0.35],  // strength of the tight glow and the wide glow on the accent
+    vignette: 0.3,      // how much darker the corners are
+  },
+  light: {
+    bg: ['#a9acb1', '#a3a6ab'],
+    faint: '#9da0a5',
+    dim: '#878a90',
+    line: '#5d6168',
+    text: '#52565d',
+    solids: ['#9fa2a7', '#989ba1', '#8f9298'],
+    // A glow adds light, so on a light background it washes the accent out. Dark corners look dirty there.
+    glow: [0.3, 0.2],
+    vignette: 0.1,
+  },
+};
 
 // Text on the wallpaper. Mostly short codes and numbers, with few real words.
 // # becomes a random digit and @ becomes a random letter.
@@ -68,7 +85,7 @@ const GROUPS = {
 // The HUD types. Each wallpaper gets one or two of them.
 const HUD = ['reticle', 'tape', 'ladder', 'readout', 'tag', 'callout'];
 
-// Makes a wallpaper. settings: { width, height, seed, accent: '#rrggbb', accents, glitch: 0..1 }
+// Makes a wallpaper. settings: { width, height, seed, accent: '#rrggbb', accents, glitch: 0..1, mode }
 // accents: how many elements use the accent colour, as well as the spark.
 // Returns { maxAccents }: how many elements in this layout can use the accent colour.
 export function renderWallpaper(canvas, settings) {
@@ -78,13 +95,15 @@ export function renderWallpaper(canvas, settings) {
 }
 
 class Wallpaper {
-  constructor({ width, height, seed, accent, accents = 1, glitch }) {
+  constructor({ width, height, seed, accent, accents = 1, glitch, mode = 'dark' }) {
     this.W = width;
     this.H = height;
     this.seed = seed;
     this.accent = accent;
     this.accents = accents;
     this.glitchAmount = glitch;
+    this.mode = MODES[mode] ? mode : 'dark';
+    this.tone = MODES[this.mode];
     this.rng = new Random(seed);
 
     // The short side sets the size of everything, so the look stays the same at any size.
@@ -191,7 +210,7 @@ class Wallpaper {
     const ctx = this.layer(accent);
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = BG;
+    ctx.fillStyle = this.tone.bg[0];
     ctx.fill();
     ctx.strokeStyle = color;
     ctx.lineWidth = this.stroke(1);
@@ -249,7 +268,7 @@ class Wallpaper {
   }
 
   // A small code label. With no text, it uses a random label.
-  label(x, y, text, color = TEXT) {
+  label(x, y, text, color = this.tone.text) {
     this.write(x, y, text ?? fill(this.rng, this.rng.pick(LABELS)), color);
   }
 
@@ -261,9 +280,9 @@ class Wallpaper {
 
   // Two neighbouring grey tones. Tiled shapes change between them (or use one).
   tones() {
-    const k = this.rng.index(SOLIDS.length - 1);
-    const a = SOLIDS[k];
-    const b = SOLIDS[k + 1];
+    const k = this.rng.index(this.tone.solids.length - 1);
+    const a = this.tone.solids[k];
+    const b = this.tone.solids[k + 1];
     return this.rng.random() < 0.6 ? [a, b] : [b, b];
   }
 
@@ -284,10 +303,10 @@ class Wallpaper {
         }
         this.poly(pts, { fill: tones[i % 2] });
       } else if (style === 'hatch') {
-        this.hatch(pts, 7, DIM, hatchDirection);
-        this.poly(pts, { outline: DIM });
+        this.hatch(pts, 7, this.tone.dim, hatchDirection);
+        this.poly(pts, { outline: this.tone.dim });
       } else {
-        this.poly(pts, { outline: LINE });
+        this.poly(pts, { outline: this.tone.line });
       }
       if (i === accentTile) {
         const k = rng.index(pts.length);
@@ -330,16 +349,16 @@ class Wallpaper {
         if (partial) {
           const k0 = rng.index(6);
           const m = rng.int(2, 4);
-          this.line(range(m + 1).map((j) => pts[(k0 + j) % 6]), LINE);
+          this.line(range(m + 1).map((j) => pts[(k0 + j) % 6]), this.tone.line);
         } else if (style === 'outline') {
-          this.poly(pts, { outline: LINE });
+          this.poly(pts, { outline: this.tone.line });
         } else {
           if (i === accentTile && r < 0.45 * this.cw && style === 'solid') {
             this.poly(pts, { fill: shade(this.accent, 0.9), accent: true });
             return;
           }
           this.poly(pts, { fill: tones[i % 2] });
-          if (style === 'cored') this.poly(hexPoints(cx, cy, (r - gap) * 0.45, rot), { fill: BG });
+          if (style === 'cored') this.poly(hexPoints(cx, cy, (r - gap) * 0.45, rot), { fill: this.tone.bg[0] });
         }
         if (i === accentTile) {
           const k = rng.index(6);
@@ -409,7 +428,7 @@ class Wallpaper {
         const sx = ox + i * step;
         const seg = [[sx + h, oy], [sx + step - 3 + h, oy], [sx + step - 3, oy + h], [sx, oy + h]];
         if (i < lit) this.poly(seg, { fill: this.accent, accent: true });
-        else this.poly(seg, { fill: SOLIDS[1] });
+        else this.poly(seg, { fill: this.tone.solids[1] });
       }
     };
     return { w, h, draw };
@@ -423,7 +442,7 @@ class Wallpaper {
       for (let i = 0; i < n; i++) {
         const x = ox + i * a * 1.1;
         const on = acc && i === n - 1;
-        this.line([[x, oy], [x + a, oy + a], [x, oy + 2 * a]], on ? this.accent : LINE, { width: 2, accent: on });
+        this.line([[x, oy], [x + a, oy + a], [x, oy + 2 * a]], on ? this.accent : this.tone.line, { width: 2, accent: on });
       }
     };
     return { w: (n - 1) * a * 1.1 + a, h: 2 * a, draw };
@@ -439,9 +458,9 @@ class Wallpaper {
       for (let i = 0; i < n; i++) {
         const cx = ox + L + i * spacing;
         const cy = oy + L;
-        this.line([[cx - L, cy], [cx + L, cy]], DIM);
-        this.line([[cx, cy - L], [cx, cy + L]], DIM);
-        this.ring(cx, cy, L * 0.4, i === accentOne ? this.accent : LINE, i === accentOne);
+        this.line([[cx - L, cy], [cx + L, cy]], this.tone.dim);
+        this.line([[cx, cy - L], [cx, cy + L]], this.tone.dim);
+        this.ring(cx, cy, L * 0.4, i === accentOne ? this.accent : this.tone.line, i === accentOne);
       }
     };
     return { w: (n - 1) * spacing + 2 * L, h: 2 * L, draw };
@@ -465,7 +484,7 @@ class Wallpaper {
       const accentDot = acc ? rng.index(pts.length) : -1;
       pts.forEach(([x, y], i) => {
         if (i === accentDot) this.dot(ox + x, oy + y, 2.5, this.accent, true);
-        else this.dot(ox + x, oy + y, 0.9, DIM);
+        else this.dot(ox + x, oy + y, 0.9, this.tone.dim);
       });
     };
     return { w: Math.max(...pts.map((p) => p[0])), h: (rows - 1) * s, draw };
@@ -486,7 +505,7 @@ class Wallpaper {
         const y = oy + i * (gap + t);
         const pts = [[x, y], [x + L, y], [x + L - t, y + t], [x, y + t]];
         if (i === accentBar) this.poly(pts, { fill: this.accent, accent: true });
-        else this.poly(pts, { fill: LINE });
+        else this.poly(pts, { fill: this.tone.line });
       }
     };
     return { w: L + (n - 1) * step, h: n * t + (n - 1) * gap, draw };
@@ -501,7 +520,7 @@ class Wallpaper {
       const L = Math.min(this.u * 2, w / 3);
       const corners = [[ox, oy, 1, 1], [ox + w, oy, -1, 1], [ox + w, oy + h, -1, -1], [ox, oy + h, 1, -1]];
       for (const [x, y, sx, sy] of corners) {
-        this.line([[x + sx * L, y], [x, y], [x, y + sy * L]], LINE);
+        this.line([[x + sx * L, y], [x, y], [x, y + sy * L]], this.tone.line);
       }
       if (acc) this.dot(ox + w / 2, oy + h / 2, 3, this.accent, true);
       else if (rng.random() < 0.5) this.label(ox + this.u, oy + this.u);
@@ -517,7 +536,7 @@ class Wallpaper {
     const draw = (ox, oy, acc) => {
       for (let i = 0; i < lines; i++) {
         const text = range(rng.int(1, 3)).map(() => fill(rng, rng.pick(LABELS))).join(' ');
-        this.label(ox + u, oy + i * u * 1.8, text, i === 0 ? TEXT : DIM);
+        this.label(ox + u, oy + i * u * 1.8, text, i === 0 ? this.tone.text : this.tone.dim);
       }
       if (acc) this.poly([[ox, oy + 2], [ox + 3, oy + 2], [ox + 3, oy + u * 1.2], [ox, oy + u * 1.2]], { fill: this.accent, accent: true });
     };
@@ -532,9 +551,9 @@ class Wallpaper {
       const y = oy + u;
       for (let i = 0, x = ox; x <= ox + w; i++, x += u) {
         const major = i % 5 === 0;
-        this.line([[x, y], [x, y - (major ? u : u / 2)]], major ? LINE : DIM);
+        this.line([[x, y], [x, y - (major ? u : u / 2)]], major ? this.tone.line : this.tone.dim);
       }
-      this.line([[ox, y], [ox + w, y]], DIM);
+      this.line([[ox, y], [ox + w, y]], this.tone.dim);
     };
     return { w, h: u, draw };
   }
@@ -566,7 +585,7 @@ class Wallpaper {
       const draw = (ox, oy) => {
         const y = oy + (twin ? u : 0);
         this.poly([[ox, y], [ox + L, y], [ox + L - t, y + t], [ox, y + t]], { fill: A, accent: true });
-        if (twin) this.poly([[ox, oy], [ox + L, oy], [ox + L - 2, oy + 2], [ox, oy + 2]], { fill: LINE });
+        if (twin) this.poly([[ox, oy], [ox + L, oy], [ox + L - 2, oy + 2], [ox, oy + 2]], { fill: this.tone.line });
       };
       return { w: L, h: t + (twin ? u : 0), draw };
     }
@@ -597,8 +616,8 @@ class Wallpaper {
       this.poly(pts, { fill: this.accent, accent: true });
       this.knockout(x + u * 0.8, ty, text);
     } else {
-      this.poly(pts, { fill: LINE });
-      this.write(x + u * 0.8, ty, text, BG, true);
+      this.poly(pts, { fill: this.tone.line });
+      this.write(x + u * 0.8, ty, text, this.tone.bg[0], true);
     }
   }
 
@@ -618,22 +637,22 @@ class Wallpaper {
       for (let k = 0; k < 4; k++) {
         const on = k === accentArc;
         this.arc(cx, cy, R, rot + k * 90 + gap / 2, rot + (k + 1) * 90 - gap / 2,
-          on ? this.accent : LINE, { width: on ? 2 : 1, accent: on });
+          on ? this.accent : this.tone.line, { width: on ? 2 : 1, accent: on });
       }
       for (let k = 0; k < 4; k++) {
         const a = rad(rot + k * 90);
-        this.line([polar(cx, cy, R * 0.72, a), polar(cx, cy, R * 1.12, a)], LINE);
+        this.line([polar(cx, cy, R * 0.72, a), polar(cx, cy, R * 1.12, a)], this.tone.line);
       }
       if (ring) {
         for (let deg = 0; deg < 360; deg += 10) {
           const a = rad(deg);
           const r0 = R * 1.28;
           const L = R * (deg % 30 === 0 ? 0.14 : 0.07);
-          this.line([polar(cx, cy, r0, a), polar(cx, cy, r0 + L, a)], DIM);
+          this.line([polar(cx, cy, r0, a), polar(cx, cy, r0 + L, a)], this.tone.dim);
         }
       }
       const r = 4;
-      this.poly([[cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy]], { fill: LINE });
+      this.poly([[cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy]], { fill: this.tone.line });
     };
     return { w: 2 * e, h: 2 * e, draw };
   }
@@ -650,21 +669,21 @@ class Wallpaper {
 
     const draw = (ox, oy, acc) => {
       const base = oy + u * 2.6;
-      this.line([[ox, base], [ox + w, base]], DIM);
+      this.line([[ox, base], [ox + w, base]], this.tone.dim);
       for (let i = 0; i <= n; i++) {
         const x = ox + i * step;
         const deg = (start + i * 5) % 360;
         const major = deg % 15 === 0;
-        this.line([[x, base], [x, base - (major ? u * 0.9 : u * 0.45)]], major ? LINE : DIM);
+        this.line([[x, base], [x, base - (major ? u * 0.9 : u * 0.45)]], major ? this.tone.line : this.tone.dim);
         if (deg % 30 === 0) {
           const text = names[deg] ?? String(deg).padStart(3, '0');
-          this.write(x - this.measure(text) / 2, base + u * 0.5, text, names[deg] ? TEXT : DIM);
+          this.write(x - this.measure(text) / 2, base + u * 0.5, text, names[deg] ? this.tone.text : this.tone.dim);
         }
       }
       const cx = ox + Math.floor(n / 2) * step;
       const triangle = [[cx - u * 0.75, oy], [cx + u * 0.75, oy], [cx, oy + u]];
       if (acc) this.poly(triangle, { fill: this.accent, accent: true });
-      else this.poly(triangle, { fill: LINE });
+      else this.poly(triangle, { fill: this.tone.line });
     };
     return { w, h: u * 3.1 + this.fontSize, draw };
   }
@@ -681,22 +700,22 @@ class Wallpaper {
 
     const draw = (ox, oy, acc) => {
       const x = ox + labelWidth + u;
-      this.line([[x, oy], [x, oy + n * step]], DIM);
+      this.line([[x, oy], [x, oy + n * step]], this.tone.dim);
       for (let i = 0; i <= n; i++) {
         const y = oy + i * step;
         const k = n - i;
         const major = k % 5 === 0;
-        this.line([[x, y], [x + (major ? u * 0.9 : u * 0.45), y]], major ? LINE : DIM);
+        this.line([[x, y], [x + (major ? u * 0.9 : u * 0.45), y]], major ? this.tone.line : this.tone.dim);
         if (major) {
           const text = String(start + k * 10).padStart(4, '0');
-          this.write(x - u * 0.5 - this.measure(text), y - this.fontSize * 0.6, text, TEXT);
+          this.write(x - u * 0.5 - this.measure(text), y - this.fontSize * 0.6, text, this.tone.text);
         }
       }
       const py = oy + pointer * step;
       const hh = u * 0.7;
       const arrow = [[x + u * 1.3, py], [x + u * 2.1, py - hh], [x + u * 5.5, py - hh], [x + u * 5.5, py + hh], [x + u * 2.1, py + hh]];
       if (acc) this.poly(arrow, { fill: this.accent, accent: true });
-      else this.poly(arrow, { fill: SOLIDS[2] });
+      else this.poly(arrow, { fill: this.tone.solids[2] });
     };
     return { w: labelWidth + u * 6.5, h: n * step, draw };
   }
@@ -714,8 +733,8 @@ class Wallpaper {
     const draw = (ox, oy, acc) => {
       this.inverseTag(ox, oy, tag, acc);
       const y0 = oy + u * 2.6;
-      this.line([[ox, y0], [ox, y0 + lineHeight * lines.length - u * 0.4]], DIM);
-      lines.forEach((text, i) => this.write(ox + u, y0 + i * lineHeight, text, i === 0 ? TEXT : DIM));
+      this.line([[ox, y0], [ox, y0 + lineHeight * lines.length - u * 0.4]], this.tone.dim);
+      lines.forEach((text, i) => this.write(ox + u, y0 + i * lineHeight, text, i === 0 ? this.tone.text : this.tone.dim));
     };
     return { w: Math.max(textWidth + u, tagWidth), h: u * 2.6 + lineHeight * lines.length, draw };
   }
@@ -742,8 +761,8 @@ class Wallpaper {
           this.poly(pts, { fill: this.accent, accent: true });
           this.knockout(tx, ty, text);
         } else {
-          this.poly(pts, { fill: LINE });
-          this.write(tx, ty, text, BG, true);
+          this.poly(pts, { fill: this.tone.line });
+          this.write(tx, ty, text, this.tone.bg[0], true);
         }
       });
     };
@@ -766,13 +785,13 @@ class Wallpaper {
       const ay = oy + th + d;
       const ex = ax + d;
       const ey = oy + th;
-      this.line([[ax, ay], [ex, ey], [ex + run, ey]], LINE);
+      this.line([[ax, ay], [ex, ey], [ex + run, ey]], this.tone.line);
       const r = 5;
       const diamond = [[ax, ay - r], [ax + r, ay], [ax, ay + r], [ax - r, ay]];
       if (acc) this.poly(diamond, { fill: this.accent, accent: true });
-      else this.poly(diamond, { outline: LINE });
-      this.write(ex + u * 0.5, oy, text, TEXT);
-      this.poly([[ex + run - u * 1.5, ey - 2], [ex + run, ey - 2], [ex + run, ey + 2], [ex + run - u * 1.5 + 4, ey + 2]], { fill: LINE });
+      else this.poly(diamond, { outline: this.tone.line });
+      this.write(ex + u * 0.5, oy, text, this.tone.text);
+      this.poly([[ex + run - u * 1.5, ey - 2], [ex + run, ey - 2], [ex + run, ey + 2], [ex + run - u * 1.5 + 4, ey + 2]], { fill: this.tone.line });
     };
     return { w: 5 + d + run, h: th + d + 5, draw };
   }
@@ -786,17 +805,17 @@ class Wallpaper {
     const rng = this.rng;
     const solid = rng.random() < 0.75;
     const border = rng.pick(['none', 'none', 'edge', 'inset']);  // a thin line, or nothing
-    const tones = rng.random() < 0.6 ? [SOLIDS[0], SOLIDS[1]] : [SOLIDS[1], SOLIDS[1]];
+    const tones = rng.random() < 0.6 ? [this.tone.solids[0], this.tone.solids[1]] : [this.tone.solids[1], this.tone.solids[1]];
     const accentHex = acc ? rng.index(tiles.length) : -1;
 
     tiles.forEach(([cx, cy, R], i) => {
       const pts = hexPoints(cx, cy, R, rot);
       if (solid) {
         this.poly(pts, { fill: tones[i % 2] });
-        if (border === 'edge') this.poly(pts, { outline: DIM });
-        if (border === 'inset') this.poly(hexPoints(cx, cy, R * 0.9, rot), { outline: DIM });
+        if (border === 'edge') this.poly(pts, { outline: this.tone.dim });
+        if (border === 'inset') this.poly(hexPoints(cx, cy, R * 0.9, rot), { outline: this.tone.dim });
       } else {
-        this.poly(pts, { outline: LINE });
+        this.poly(pts, { outline: this.tone.line });
       }
       if (i === accentHex) {
         // Light part of one side that is on the screen.
@@ -826,13 +845,13 @@ class Wallpaper {
     const d = u * rng.pick([2, 3, 4]);
     const ym = y0 + (y1 - y0) * rng.uniform(0.3, 0.7);
     const path = [[a, y0], [a, ym], [a + d, ym + d], [a + d, y1]];
-    this.line(path.map(([x, y]) => [X(x), y]), LINE);
+    this.line(path.map(([x, y]) => [X(x), y]), this.tone.line);
     for (let y = y0 + u, i = 0; y < ym - u; y += u, i++) {
-      this.line([[X(a), y], [X(a - (i % 4 === 0 ? u : u * 0.5)), y]], DIM);
+      this.line([[X(a), y], [X(a - (i % 4 === 0 ? u : u * 0.5)), y]], this.tone.dim);
     }
     for (const [x, y] of [path[0], path[3]]) {
       const r = 4;
-      this.poly([[X(x), y - r], [X(x) + r, y], [X(x), y + r], [X(x) - r, y]], { fill: LINE });
+      this.poly([[X(x), y - r], [X(x) + r, y], [X(x), y + r], [X(x) - r, y]], { fill: this.tone.line });
     }
     if (acc) {
       const ya = ym + d + (y1 - ym - d) * rng.uniform(0.2, 0.6);
@@ -855,11 +874,11 @@ class Wallpaper {
     const cap = [[x1 - capWidth, y0], [x1, y0], [x1 - h, y1], [x1 - h - capWidth, y1]].map(([x, y]) => [X(x), y]);
 
     if (rng.random() < 0.7) {
-      this.poly(band, { fill: rng.pick([SOLIDS[0], SOLIDS[1]]) });
+      this.poly(band, { fill: rng.pick([this.tone.solids[0], this.tone.solids[1]]) });
       if (acc) this.poly(cap, { fill: shade(this.accent, 0.9), accent: true });
     } else {
-      this.hatch(band, spacing, DIM, direction);
-      this.line([[X(x1), y0], [X(x1 - h), y1]], LINE);
+      this.hatch(band, spacing, this.tone.dim, direction);
+      this.line([[X(x1), y0], [X(x1 - h), y1]], this.tone.line);
       if (acc) this.hatch(cap, spacing, shade(this.accent, 0.8), direction, true);
     }
   }
@@ -872,14 +891,14 @@ class Wallpaper {
     const mid = side < 0 ? 0 : 180;
     const a0 = mid - span;
     const a1 = mid + span;
-    for (const f of [1.0, 0.82]) this.arc(cx, cy, R * f, a0, a1, DIM);
+    for (const f of [1.0, 0.82]) this.arc(cx, cy, R * f, a0, a1, this.tone.dim);
     const bandStart = mid + rng.uniform(-span * 0.8, span * 0.2);
     const bandEnd = bandStart + rng.uniform(15, 35);
     const bandWidth = u * 1.6;
-    this.arc(cx, cy, R * 0.9 - bandWidth / 2, bandStart, bandEnd, SOLIDS[2], { width: bandWidth / this.k });
+    this.arc(cx, cy, R * 0.9 - bandWidth / 2, bandStart, bandEnd, this.tone.solids[2], { width: bandWidth / this.k });
     for (let deg = a0; deg <= a1; deg += 3) {
       const major = deg % 15 === 0;
-      this.line([polar(cx, cy, R, rad(deg)), polar(cx, cy, R + u * (major ? 1 : 0.5), rad(deg))], major ? LINE : DIM);
+      this.line([polar(cx, cy, R, rad(deg)), polar(cx, cy, R + u * (major ? 1 : 0.5), rad(deg))], major ? this.tone.line : this.tone.dim);
     }
     if (acc) {
       const c0 = mid + rng.uniform(-span * 0.6, span * 0.4);
@@ -1035,9 +1054,9 @@ class Wallpaper {
         if (blocked) return false;
       }
     }
-    this.line(pts, DIM);
-    this.ring(ax, ay, 3, LINE);
-    this.ring(bx, by, 3, LINE);
+    this.line(pts, this.tone.dim);
+    this.ring(ax, ay, 3, this.tone.line);
+    this.ring(bx, by, 3, this.tone.line);
     return true;
   }
 
@@ -1052,10 +1071,10 @@ class Wallpaper {
     this.ctx = base.getContext('2d');
     this.actx = accentLayer.getContext('2d');
 
-    // Background: near-black, a little lighter at the bottom.
+    // Background: a slight change from top to bottom.
     const gradient = this.ctx.createLinearGradient(0, 0, 0, H);
-    gradient.addColorStop(0, BG);
-    gradient.addColorStop(1, '#0d0e10');
+    gradient.addColorStop(0, this.tone.bg[0]);
+    gradient.addColorStop(1, this.tone.bg[1]);
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, W, H);
 
@@ -1066,17 +1085,17 @@ class Wallpaper {
     for (let i = 0; i < guides; i++) {
       if (rng.random() < 0.5) {
         const x = this.margin + rng.int(0, this.cols) * this.cw;
-        this.line([[x, rng.uniform(0.1, 0.4) * H], [x, H]], FAINT);
+        this.line([[x, rng.uniform(0.1, 0.4) * H], [x, H]], this.tone.faint);
       } else {
         const y = this.top + rng.int(0, this.rows) * this.cw;
-        this.line([[0, y], [W, y]], FAINT);
+        this.line([[0, y], [W, y]], this.tone.faint);
       }
     }
     if (rng.random() < 0.7) {
       const x0 = rng.uniform(-0.3, 0.6) * W;
       const y0 = rng.uniform(0.3, 0.6) * H;
       const L = W * 1.2;
-      this.line([[x0, y0], [x0 + L, y0 + rng.pick([1, -1]) * L]], FAINT);
+      this.line([[x0, y0], [x0 + L, y0 + rng.pick([1, -1]) * L]], this.tone.faint);
     }
 
     // The spark always uses the accent. The accents setting is how many other groups use it.
@@ -1108,18 +1127,18 @@ class Wallpaper {
         return;
       }
       g.draw(g.ox, g.oy, acc);
-      if (rng.random() < 0.3 && g.name !== 'text') this.label(g.box[0], g.box[3] + u * 1.2, undefined, DIM);
+      if (rng.random() < 0.3 && g.name !== 'text') this.label(g.box[0], g.box[3] + u * 1.2, undefined, this.tone.dim);
     });
 
     // The seed, small, at the bottom left.
-    this.label(this.margin, H * 0.93, String(this.seed).padStart(6, '0'), DIM);
+    this.label(this.margin, H * 0.93, String(this.seed).padStart(6, '0'), this.tone.dim);
 
     // Put the layers together and add the glow.
     const out = canvas.getContext('2d', { willReadFrequently: true });
     out.drawImage(base, 0, 0);
     out.drawImage(accentLayer, 0, 0);
-    addGlow(out, accentLayer, 4, 0.6);
-    addGlow(out, accentLayer, 16, 0.35);
+    addGlow(out, accentLayer, 4, this.tone.glow[0]);
+    addGlow(out, accentLayer, 16, this.tone.glow[1]);
 
     // Effects on the pixels.
     const image = out.getImageData(0, 0, W, H);
@@ -1133,7 +1152,7 @@ class Wallpaper {
         big: this.big,
       });
     }
-    finish(image, this.seed);
+    finish(image, this.seed, this.tone.vignette);
     out.putImageData(image, 0, 0);
   }
 }
