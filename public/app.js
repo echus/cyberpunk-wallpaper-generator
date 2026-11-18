@@ -37,12 +37,14 @@ form.palette.addEventListener('change', () => {
 
 form.accent.addEventListener('input', drawSoon);
 
-// The sun and moon button switches the mode. The browser remembers it for the next visit.
-document.querySelector('#mode-toggle').addEventListener('click', () => {
-  form.mode.value = form.mode.value === 'light' ? 'dark' : 'light';
-  saveMode();
-  draw();
-});
+// The moon, half and sun buttons pick the mode. The browser remembers it for the next visit.
+for (const button of document.querySelectorAll('#modes button')) {
+  button.addEventListener('click', () => {
+    form.mode.value = button.value;
+    saveMode();
+    draw();
+  });
+}
 
 form.accents.addEventListener('input', () => {
   showSliderValues();
@@ -159,9 +161,9 @@ function draw() {
   // The page uses the same accent colour as the wallpaper. PALETTES in wallpaper.js is the one place to change it.
   document.documentElement.style.setProperty('--accent', form.accent.value);
   document.documentElement.dataset.mode = form.mode.value;
-  const toggleLabel = form.mode.value === 'light' ? 'dark mode' : 'light mode';
-  document.querySelector('#mode-toggle').setAttribute('aria-label', toggleLabel);
-  document.querySelector('#mode-toggle').title = toggleLabel;
+  for (const button of document.querySelectorAll('#modes button')) {
+    button.setAttribute('aria-checked', button.value === form.mode.value);
+  }
   showFavicon(form.accent.value);
   const { maxAccents } = renderWallpaper(canvas, settings());
   // The accents slider goes up to the number of elements in this layout that can use the accent.

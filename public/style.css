@@ -16,21 +16,34 @@
   color-scheme: dark;
 }
 
-/* Light mode: the same page in light greys. app.js sets data-mode with the sun and moon button.
-   The controls have more of their own background, because the wallpaper behind them is mid grey. */
-:root[data-mode="light"] {
-  --bg: #d3d5d9;
-  --panel: #cdcfd3;
-  --line: #a5a8ae;
+/* Dim and day: the same page in light greys. app.js sets data-mode with the mode buttons.
+   The controls have more of their own background, because the wallpaper behind them is light. */
+:root:is([data-mode="dim"], [data-mode="light"]) {
   --text: #33383f;
   --muted: #555a63;
   --strong: #0d0f12;
   --track: #7f838a;
   --edge: color-mix(in srgb, black 18%, transparent);
   --panel-alpha: 65%;
+  color-scheme: light;
+}
+
+/* Dim: on a mid grey wallpaper. */
+:root[data-mode="dim"] {
+  --bg: #d3d5d9;
+  --panel: #cdcfd3;
+  --line: #a5a8ae;
   --surround: #a5a9af;
   --dots: radial-gradient(#b4b8be 1px, transparent 1.5px) 0 0 / 24px 24px;
-  color-scheme: light;
+}
+
+/* Day: on a near-white wallpaper. The space around it is the negative of the night one. */
+:root[data-mode="light"] {
+  --bg: #e2e4e7;
+  --panel: #f6f7f8;
+  --line: #ccd0d5;
+  --surround: #e9ebef;
+  --dots: radial-gradient(#d6dae1 1px, transparent 1.5px) 0 0 / 24px 24px;
 }
 
 * {
@@ -147,34 +160,37 @@ h1 {
   margin-bottom: 8px;
 }
 
-#mode-toggle {
+/* The mode buttons: small pixel icons. The chosen one is in the accent colour. */
+#modes {
   display: flex;
   margin: -4px 12px -4px 0;
+}
+
+#modes button {
+  display: flex;
   padding: 4px;
   border: 0;
   color: var(--muted);
   background: none;
 }
 
-#mode-toggle svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+/* 12 px shows each pixel of the 24 grid's 2-unit steps as one whole screen pixel, so the icons stay sharp. */
+#modes svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
 }
 
-/* Like download, it turns bright and glows in the accent colour on hover. */
-#mode-toggle:hover {
-  color: var(--strong);
+#modes button[aria-checked="true"] {
+  color: var(--accent);
   filter: drop-shadow(0 0 3px var(--accent));
 }
 
-[data-mode="light"] #mode-toggle .sun,
-:root:not([data-mode="light"]) #mode-toggle .moon {
-  display: none;
+/* Like download, it turns bright and glows in the accent colour on hover. */
+#modes button:hover {
+  color: var(--strong);
+  filter: drop-shadow(0 0 3px var(--accent));
 }
 
 /* A small line just under the title, so the two read as one. */

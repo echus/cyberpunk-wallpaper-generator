@@ -26,6 +26,7 @@ export const DEVICES = {
 };
 
 // The greys of each mode. Marks step away from the background: faint, then dim, then lines and text.
+// Night and dim have light marks on a darker background. Day has dark marks on near-white, like a negative of night.
 export const MODES = {
   dark: {
     bg: ['#08090b', '#0d0e10'],  // background, top to bottom
@@ -36,10 +37,11 @@ export const MODES = {
     solids: ['#131519', '#191b20', '#202329'],  // solid blocks
     data: [70, 76, 86],  // glitch blocks of broken data
     glow: [0.6, 0.35],  // strength of the tight glow and the wide glow on the accent
-    vignette: 0.3,      // how much darker the corners are
+    vignette: 0.3,      // how much the corners change: darker with light marks, lighter with dark marks
+    darkMarks: false,
   },
-  // Light marks on a mid grey, like the dark mode but lifted.
-  light: {
+  // Light marks on a mid grey, like night but lifted.
+  dim: {
     bg: ['#9ca0a6', '#979ba1'],
     faint: '#a6aab0',
     dim: '#b5b9bf',
@@ -49,6 +51,21 @@ export const MODES = {
     data: [190, 194, 200],
     glow: [0.45, 0.3],
     vignette: 0.15,
+    darkMarks: false,
+  },
+  // The negatives of the night greys. The accent colours stay the same.
+  light: {
+    bg: ['#f5f6f8', '#f0f1f3'],
+    faint: '#e6e8ec',
+    dim: '#d0d4db',
+    line: '#aab0bb',
+    text: '#9ea4ae',
+    solids: ['#e8eaee', '#e2e4e9', '#d9dce2'],
+    data: [174, 180, 190],
+    glow: [0.6, 0.35],
+    vignette: 0.3,
+    // With dark marks the glow, the colour edges of the glitches and the corners all turn the other way (see effects.js).
+    darkMarks: true,
   },
 };
 
@@ -1139,8 +1156,8 @@ class Wallpaper {
     const out = canvas.getContext('2d', { willReadFrequently: true });
     out.drawImage(base, 0, 0);
     out.drawImage(accentLayer, 0, 0);
-    addGlow(out, accentLayer, 4, this.tone.glow[0]);
-    addGlow(out, accentLayer, 16, this.tone.glow[1]);
+    addGlow(out, accentLayer, 4, this.tone.glow[0], this.tone.darkMarks);
+    addGlow(out, accentLayer, 16, this.tone.glow[1], this.tone.darkMarks);
 
     // Effects on the pixels.
     const image = out.getImageData(0, 0, W, H);
@@ -1151,11 +1168,12 @@ class Wallpaper {
         scale: this.k,
         accent: hexToRgb(this.accent),
         dataColor: this.tone.data,
+        darkMarks: this.tone.darkMarks,
         quietTop: this.quietTop,
         big: this.big,
       });
     }
-    finish(image, this.seed, this.tone.vignette);
+    finish(image, this.seed, this.tone.vignette, this.tone.darkMarks);
     out.putImageData(image, 0, 0);
   }
 }
@@ -1164,7 +1182,8 @@ class Wallpaper {
 
 // Adds a soft glow of a layer. The layer is made smaller, then drawn back at full size.
 // That blurs it. 'shrink' sets how soft the glow is. 'strength' sets how bright it is.
-function addGlow(ctx, layer, shrink, strength) {
+// On a light background (darkMarks) the glow tints and darkens instead: like ink that bleeds into paper.
+function addGlow(ctx, layer, shrink, strength, darkMarks = false) {
   let small = layer;
   // Halve the size in steps. One large step skips pixels and looks rough.
   for (let f = 2; f <= shrink; f *= 2) {
@@ -1175,7 +1194,7 @@ function addGlow(ctx, layer, shrink, strength) {
     small = next;
   }
   ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalCompositeOperation = darkMarks ? 'multiply' : 'lighter';
   ctx.globalAlpha = strength;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(small, 0, 0, layer.width, layer.height);

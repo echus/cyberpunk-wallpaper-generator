@@ -1,5 +1,6 @@
 // Makes examples/preview.webp, the picture of the app in the README:
-// the app in a desktop window and on a phone, side by side.
+// the app in a desktop window and on a phone, side by side. Each view shows the three modes:
+// night at the top left, then dim and day in diagonal bands towards the bottom right.
 // Run it with `npm run readme-image`. It uses the installed Chrome, or the browser at CHROME.
 
 import { chromium } from 'playwright-core';
@@ -12,19 +13,29 @@ const OUT = fileURLToPath(new URL('../examples/preview.webp', import.meta.url));
 // The page loads from this address, and every request to it is answered with a file from public/.
 const ORIGIN = 'http://wallpaper.test';
 
-// Both views show 600 px tall in the picture. Each wallpaper is a custom size with the shape of its preset,
+// All views show 600 px tall in the picture. Each wallpaper is a custom size with the shape of its preset,
 // but smaller, so its shapes are big enough to see in the README.
 const HEIGHT = 600;
 const SHOTS = [
   {
     window: { width: 1152, height: 720 },
-    query: 'seed=570791&device=custom&w=1920&h=1080&colour=sodium&mode=dark&accents=8&glitch=0.4',
+    query: 'seed=570791&device=custom&w=1920&h=1080&colour=sodium&accents=8&glitch=0.4',
   },
   {
     window: { width: 320, height: 693 },
-    query: 'seed=532919&device=custom&w=720&h=1560&colour=sodium&mode=light&accents=6&glitch=0.4',
+    query: 'seed=532919&device=custom&w=720&h=1560&colour=sodium&accents=6&glitch=0.4',
   },
 ];
+
+// The modes in the order of the bands. The layout of a wallpaper is the same in each mode,
+// so the bands join up.
+const MODES = ['dark', 'dim', 'light'];
+const GAP = 28;
+// The cuts between the bands rise to the right: for each pixel to the right they go SLOPE pixels up.
+// CUTS are their heights at the left edge of the picture. They pass under both control panels,
+// and dim is a band between night and day.
+const SLOPE = 0.25;
+const CUTS = [525, 660];
 
 const browser = await chromium.launch(
   process.env.CHROME ? { executablePath: process.env.CHROME } : { channel: 'chrome' },
@@ -51,22 +62,34 @@ async function shoot({ window, query }) {
   return { width, src: `data:image/png;base64,${image.toString('base64')}` };
 }
 
-const views = [];
-for (const shot of SHOTS) views.push(await shoot(shot));
+// One row of views for each mode.
+const rows = [];
+for (const mode of MODES) {
+  const views = [];
+  for (const shot of SHOTS) views.push(await shoot({ ...shot, query: `${shot.query}&mode=${mode}` }));
+  rows.push(views);
+}
 
+// The rows lie on top of each other. Each row after the first shows only below its cut.
 // The views go side by side with rounded corners. Everything around them is see-through.
+const width = rows[0].reduce((sum, view) => sum + view.width, 0) + GAP * (SHOTS.length - 1);
+const below = (cut) => `polygon(0 ${cut}px, ${width}px ${cut - SLOPE * width}px, ${width}px ${HEIGHT}px, 0 ${HEIGHT}px)`;
 const page = await browser.newPage({ viewport: { width: 1600, height: 800 }, deviceScaleFactor: 2 });
 await page.setContent(`
   <style>
     body { margin: 0; }
-    .row { display: inline-flex; gap: 28px; }
+    .stack { position: relative; width: ${width}px; height: ${HEIGHT}px; }
+    .row { position: absolute; inset: 0; display: flex; gap: ${GAP}px; }
     img { display: block; height: ${HEIGHT}px; border-radius: 10px; }
   </style>
-  <div class="row">
-    ${views.map(({ width, src }) => `<img width="${width}" src="${src}">`).join('')}
+  <div class="stack">
+    ${rows.map((views, i) => `
+      <div class="row" style="${i ? `clip-path: ${below(CUTS[i - 1])}` : ''}">
+        ${views.map((view) => `<img width="${view.width}" src="${view.src}">`).join('')}
+      </div>`).join('')}
   </div>
 `);
-const png = await page.locator('.row').screenshot({ omitBackground: true });
+const png = await page.locator('.stack').screenshot({ omitBackground: true });
 
 // WebP keeps the see-through parts like PNG, but at a tenth of the size, because the grain is lossy.
 const webp = await page.evaluate(async (src) => {

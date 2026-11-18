@@ -7,10 +7,13 @@ import { Random } from './random.js';
 // amount: 0 is none, 1 is heavy. big: boxes of the large shapes on the screen.
 // scale: the size of the picture, 1 on a 1290 px wide phone. Sizes below are in pixels at scale 1.
 // dataColor: the grey of the broken data blocks.
-export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, dataColor = [70, 76, 86] }) {
+// darkMarks: the marks are darker than the background. The red and blue edges then go the other way,
+// so they look the same as on a dark background.
+export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, dataColor = [70, 76, 86], darkMarks = false }) {
   const { data, width: w, height: h } = image;
   const rng = new Random((seed ^ 0x9e3779b9) >>> 0);
   const px = (v) => Math.max(1, Math.round(v * scale));
+  const edge = darkMarks ? -1 : 1;  // direction of the red and blue edges
   // A whole number of pixels from a to b, at scale 1.
   const size = (a, b) => rng.int(px(a), px(b));
 
@@ -78,13 +81,13 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, 
     const [y0, y1] = rng.random() < 0.25 ? band(30, 110) : band(1, 28);
     shiftRows(data, w, y0, y1, sign() * size(6, 29 + Math.floor(140 * amount)));
     if (rng.random() < 0.45) {
-      const k = size(2, 3 + Math.floor(10 * amount));
+      const k = edge * size(2, 3 + Math.floor(10 * amount));
       shiftRows(data, w, y0, y1, k, [0]);
       shiftRows(data, w, y0, y1, -k, [2]);
     }
   }
 
-  // 2. A block is cut out and moved over a little. Sometimes a light line shows at the cut.
+  // 2. A block is cut out and moved over a little. Sometimes a line shows at the cut: light on a dark background, dark on a light one.
   const blocks = count(1.5);
   for (let n = 0; n < blocks; n++) {
     const [y0, y1] = band(20, 240);
@@ -95,9 +98,9 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, 
     if (rng.random() < 0.5) {
       for (let x = Math.max(0, x0 + dx); x < Math.min(w, x0 + dx + blockWidth); x++) {
         const i = (y0 * w + x) * 4;
-        data[i] += 18;
-        data[i + 1] += 18;
-        data[i + 2] += 18;
+        data[i] += 18 * edge;
+        data[i + 1] += 18 * edge;
+        data[i + 2] += 18 * edge;
       }
     }
   }
@@ -113,7 +116,7 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, 
       const ey = Math.min(h, sy + sliceHeight);
       shiftRows(data, w, sy, ey, sign() * size(15, 24 + Math.floor(160 * Math.min(amount, 1.5))));
       if (rng.random() < 0.6) {
-        const k = size(3, 9);
+        const k = edge * size(3, 9);
         shiftRows(data, w, sy, ey, k, [0]);
         shiftRows(data, w, sy, ey, -k, [2]);
       }
@@ -168,12 +171,13 @@ export function glitch(image, { amount, seed, accent, quietTop, big, scale = 1, 
     }
   }
 
-  // 6. Red moves 1 pixel (at scale 1) to the right on the whole picture: a soft red/cyan edge on thin lines.
-  if (amount > 0.25) shiftRows(data, w, 0, h, px(1), [0]);
+  // 6. Red moves 1 pixel (at scale 1) on the whole picture: a soft red/cyan edge on thin lines.
+  if (amount > 0.25) shiftRows(data, w, 0, h, edge * px(1), [0]);
 }
 
-// Makes the edges a little darker and adds fine grain. vignette: how much darker the corners are.
-export function finish(image, seed, vignette = 0.3) {
+// Makes the edges a little darker and adds fine grain. vignette: how much the corners change.
+// lighten: the corners get lighter, for a light background with dark marks.
+export function finish(image, seed, vignette = 0.3, lighten = false) {
   const { data, width: w, height: h } = image;
   const rng = new Random(seed + 1);
   for (let y = 0; y < h; y++) {
@@ -184,9 +188,9 @@ export function finish(image, seed, vignette = 0.3) {
       // The sum of three random numbers is near a bell curve. That looks like film grain.
       const grain = (rng.random() + rng.random() + rng.random() - 1.5) * 5.6;
       const i = (y * w + x) * 4;
-      data[i] = data[i] * dark + grain;
-      data[i + 1] = data[i + 1] * dark + grain;
-      data[i + 2] = data[i + 2] * dark + grain;
+      for (let c = i; c < i + 3; c++) {
+        data[c] = (lighten ? 255 - (255 - data[c]) * dark : data[c] * dark) + grain;
+      }
     }
   }
 }
