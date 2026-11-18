@@ -19,11 +19,11 @@ const HEIGHT = 600;
 const SHOTS = [
   {
     window: { width: 1152, height: 720 },
-    query: 'seed=570791&device=custom&w=1920&h=1080&colour=sodium&accents=8&glitch=0.4',
+    query: 'seed=570791&device=custom&w=1920&h=1080&colour=rhodamine&accents=8&glitch=0.4',
   },
   {
     window: { width: 320, height: 693 },
-    query: 'seed=532919&device=custom&w=720&h=1560&colour=sodium&accents=6&glitch=0.4',
+    query: 'seed=532919&device=custom&w=720&h=1560&colour=rhodamine&accents=6&glitch=0.4',
   },
 ];
 

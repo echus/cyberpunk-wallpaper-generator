@@ -241,7 +241,7 @@ function fileName() {
 }
 
 // The settings as a page address, for example:
-// ?seed=205&device=mobile&colour=sodium&mode=dark&accents=1&glitch=0.5
+// ?seed=205&device=mobile&colour=rhodamine&mode=dark&accents=1&glitch=0.5
 // ?seed=205&device=custom&w=2560&h=1440&colour=33e8ff&mode=light&accents=3&glitch=0.5
 function address() {
   const { width, height, seed, accent, accents, glitch, mode } = settings();
@@ -272,7 +272,7 @@ function loadAddress() {
   }
 
   // Colour: a preset name, or a hex colour without the #.
-  const colour = params.get('colour') ?? 'sodium';
+  const colour = params.get('colour') ?? 'rhodamine';
   if (PALETTES[colour]) {
     form.palette.value = colour;
     form.accent.value = PALETTES[colour];
@@ -280,8 +280,8 @@ function loadAddress() {
     form.palette.value = 'custom';
     form.accent.value = `#${colour.toLowerCase()}`;
   } else {
-    form.palette.value = 'sodium';
-    form.accent.value = PALETTES.sodium;
+    form.palette.value = 'rhodamine';
+    form.accent.value = PALETTES.rhodamine;
   }
 
   // Mode: from the address, then the last mode in this browser, then dark.
